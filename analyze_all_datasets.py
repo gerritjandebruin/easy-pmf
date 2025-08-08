@@ -1,4 +1,4 @@
-"""PMF Analysis for All Datasets
+"""PMF Analysis for All Datasets.
 
 This script runs PMF analysis on all available datasets in the data folder.
 It creates organized outputs in the output folder with dataset-specific naming.
@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+
 from pmf import PMF
 
 
@@ -63,7 +64,8 @@ def analyze_dataset(dataset_name, dataset_info, output_dir, n_components=7):
     # Ensure both datasets have the same shape and columns
     if concentrations.shape != uncertainties.shape:
         print(
-            f"Warning: Concentrations shape {concentrations.shape} != Uncertainties shape {uncertainties.shape}"
+            f"Warning: Concentrations shape {concentrations.shape} != "
+            f"Uncertainties shape {uncertainties.shape}"
         )
 
     if not concentrations.columns.equals(uncertainties.columns):
@@ -80,7 +82,8 @@ def analyze_dataset(dataset_name, dataset_info, output_dir, n_components=7):
     ]  # Keep same columns in uncertainties
 
     print(
-        f"Data preprocessing: Removed {initial_cols - len(concentrations.columns)} columns with all zeros or NaN"
+        f"Data preprocessing: Removed "
+        f"{initial_cols - len(concentrations.columns)} columns with all zeros or NaN"
     )
     print(f"Final data shape: {concentrations.shape}")
     print(
@@ -98,7 +101,8 @@ def analyze_dataset(dataset_name, dataset_info, output_dir, n_components=7):
 
     # Save the results
     print("Saving PMF results...")
-    # The contributions tell you how much each factor contributes to each sample (time point)
+    # The contributions tell you how much each factor contributes
+    # to each sample (time point)
     contributions = pd.DataFrame(
         pmf.contributions_.values,
         index=concentrations.index,
@@ -115,7 +119,9 @@ def analyze_dataset(dataset_name, dataset_info, output_dir, n_components=7):
     profiles.to_csv(output_dir / f"{dataset_name}_factor_profiles.csv")
 
     print(
-        f"PMF analysis complete. Results saved to {output_dir}/{dataset_name}_factor_contributions.csv and {output_dir}/{dataset_name}_factor_profiles.csv"
+        f"PMF analysis complete. Results saved to {output_dir}/"
+        f"{dataset_name}_factor_contributions.csv and "
+        f"{output_dir}/{dataset_name}_factor_profiles.csv"
     )
 
     # Generate all visualizations
@@ -137,7 +143,7 @@ def generate_visualizations(
     sns.set_palette("viridis")
 
     # 1. Factor Profiles Heatmap
-    fig, ax = plt.subplots(figsize=(16, 8))
+    _fig, ax = plt.subplots(figsize=(16, 8))
     sns.heatmap(
         profiles,
         annot=False,
@@ -162,7 +168,7 @@ def generate_visualizations(
     plt.close()
 
     # 2. Factor Contributions Heatmap (time series)
-    fig, ax = plt.subplots(figsize=(12, 10))
+    _fig, ax = plt.subplots(figsize=(12, 10))
     # For better visualization, we'll show every 5th time point to avoid overcrowding
     step = max(1, len(contributions) // 30)  # Show ~30 time points maximum
     contributions_subset = contributions.iloc[::step, :]
@@ -191,7 +197,7 @@ def generate_visualizations(
     plt.close()
 
     # 3. Correlation matrix of factors
-    fig, ax = plt.subplots(figsize=(8, 6))
+    _fig, ax = plt.subplots(figsize=(8, 6))
     correlation_matrix = contributions.corr()
     sns.heatmap(
         correlation_matrix,
@@ -214,7 +220,7 @@ def generate_visualizations(
     plt.close()
 
     # 4. Top species contributions for each factor
-    fig, axes = plt.subplots(2, 4, figsize=(20, 10))
+    _fig, axes = plt.subplots(2, 4, figsize=(20, 10))
     axes = axes.flatten()
 
     for i, factor in enumerate(profiles.index):
@@ -234,7 +240,7 @@ def generate_visualizations(
             ax.set_ylabel("Concentration")
 
             # Add value labels on bars
-            for j, bar in enumerate(bars):
+            for _j, bar in enumerate(bars):
                 height = bar.get_height()
                 ax.text(
                     bar.get_x() + bar.get_width() / 2.0,
@@ -272,8 +278,8 @@ def generate_visualizations(
     print("Creating EPA PMF-style visualizations...")
 
     # 5. EPA-style Factor Profile plots (one plot per factor)
-    for factor_idx, factor_name in enumerate(profiles.index):
-        fig, ax = plt.subplots(figsize=(14, 8))
+    for _factor_idx, factor_name in enumerate(profiles.index):
+        _fig, ax = plt.subplots(figsize=(14, 8))
 
         # Get the factor profile data
         factor_data = profiles.loc[factor_name]
@@ -372,17 +378,17 @@ def generate_visualizations(
         ax.legend(handles=legend_elements, loc="upper right")
 
         plt.tight_layout()
+        factor_filename = f"{factor_name.lower().replace(' ', '_')}"
         plt.savefig(
-            output_dir
-            / f"{dataset_name}_factor_profile_{factor_name.lower().replace(' ', '_')}.png",
+            output_dir / f"{dataset_name}_factor_profile_{factor_filename}.png",
             dpi=300,
             bbox_inches="tight",
         )
         plt.close()
 
     # 6. EPA-style Factor Contributions time series plots (one plot per factor)
-    for factor_idx, factor_name in enumerate(contributions.columns):
-        fig, ax = plt.subplots(figsize=(14, 6))
+    for _factor_idx, factor_name in enumerate(contributions.columns):
+        _fig, ax = plt.subplots(figsize=(14, 6))
 
         # Get the factor contributions over time
         factor_contributions = contributions[factor_name]
@@ -431,9 +437,9 @@ def generate_visualizations(
         ax.spines["right"].set_visible(False)
 
         plt.tight_layout()
+        factor_filename = f"{factor_name.lower().replace(' ', '_')}"
         plt.savefig(
-            output_dir
-            / f"{dataset_name}_factor_contributions_{factor_name.lower().replace(' ', '_')}.png",
+            output_dir / f"{dataset_name}_factor_contributions_{factor_filename}.png",
             dpi=300,
             bbox_inches="tight",
         )
@@ -444,7 +450,8 @@ def generate_visualizations(
         f"- Individual factor profile plots: {dataset_name}_factor_profile_factor_X.png"
     )
     print(
-        f"- Individual factor contribution plots: {dataset_name}_factor_contributions_factor_X.png"
+        f"- Individual factor contribution plots: "
+        f"{dataset_name}_factor_contributions_factor_X.png"
     )
 
 

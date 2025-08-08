@@ -1,4 +1,4 @@
-"""Command Line Interface for Easy PMF
+"""Command Line Interface for Easy PMF.
 
 This module provides command-line tools for PMF analysis.
 """
@@ -10,7 +10,8 @@ import sys
 def main():
     """Main entry point for the easy-pmf command-line tool."""
     parser = argparse.ArgumentParser(
-        description="Easy PMF - Command Line Interface for Positive Matrix Factorization",
+        description="Easy PMF - Command Line Interface for Positive Matrix "
+        "Factorization",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:

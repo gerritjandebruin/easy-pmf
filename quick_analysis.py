@@ -1,4 +1,4 @@
-"""Quick PMF Analysis Script
+"""Quick PMF Analysis Script.
 
 This script provides an easy interface to run PMF analysis on a specific dataset.
 Simply run this script and follow the prompts to select which dataset to analyze.
@@ -9,6 +9,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+
 from pmf import PMF
 
 
@@ -74,9 +75,7 @@ def select_dataset(datasets):
     while True:
         try:
             choice = (
-                input(
-                    f"Select dataset (1-{len(dataset_list)}) or 'all' for all datasets: "
-                )
+                input(f"Select dataset (1-{len(dataset_list)}) or 'all' for all: ")
                 .strip()
                 .lower()
             )
@@ -143,7 +142,7 @@ def analyze_single_dataset(dataset_name, dataset_info, output_dir):
         profiles.to_csv(output_dir / f"{clean_name}_factor_profiles.csv")
 
         # Create summary plot
-        fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(15, 10))
+        _fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(15, 10))
 
         # Factor profiles heatmap
         sns.heatmap(profiles, annot=False, cmap="viridis", ax=ax1)
@@ -205,7 +204,8 @@ def main():
     if not datasets:
         print("\nNo datasets found!")
         print(
-            "Please ensure you have matching concentration and uncertainty files in the 'data' folder."
+            "Please ensure you have matching concentration and uncertainty "
+            "files in the 'data' folder."
         )
         return
 
