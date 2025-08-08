@@ -101,7 +101,8 @@ def analyze_dataset(dataset_name, dataset_info, output_dir, n_components=7):
 
     # Save the results
     print("Saving PMF results...")
-    # The contributions tell you how much each factor contributes to each sample (time point)
+    # The contributions tell you how much each factor contributes
+    # to each sample (time point)
     contributions = pd.DataFrame(
         pmf.contributions_.values,
         index=concentrations.index,
@@ -449,7 +450,8 @@ def generate_visualizations(
         f"- Individual factor profile plots: {dataset_name}_factor_profile_factor_X.png"
     )
     print(
-        f"- Individual factor contribution plots: {dataset_name}_factor_contributions_factor_X.png"
+        f"- Individual factor contribution plots: "
+        f"{dataset_name}_factor_contributions_factor_X.png"
     )
 
 
