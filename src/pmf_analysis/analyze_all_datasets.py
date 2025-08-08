@@ -64,7 +64,8 @@ def analyze_dataset(dataset_name, dataset_info, output_dir, n_components=7):
     # Ensure both datasets have the same shape and columns
     if concentrations.shape != uncertainties.shape:
         print(
-            f"Warning: Concentrations shape {concentrations.shape} != Uncertainties shape {uncertainties.shape}"
+            f"Warning: Concentrations shape {concentrations.shape} != "
+            f"Uncertainties shape {uncertainties.shape}"
         )
 
     if not concentrations.columns.equals(uncertainties.columns):
@@ -81,7 +82,8 @@ def analyze_dataset(dataset_name, dataset_info, output_dir, n_components=7):
     ]  # Keep same columns in uncertainties
 
     print(
-        f"Data preprocessing: Removed {initial_cols - len(concentrations.columns)} columns with all zeros or NaN"
+        f"Data preprocessing: Removed "
+        f"{initial_cols - len(concentrations.columns)} columns with all zeros or NaN"
     )
     print(f"Final data shape: {concentrations.shape}")
     print(
@@ -99,7 +101,8 @@ def analyze_dataset(dataset_name, dataset_info, output_dir, n_components=7):
 
     # Save the results
     print("Saving PMF results...")
-    # The contributions tell you how much each factor contributes to each sample (time point)
+    # The contributions tell you how much each factor contributes
+    # to each sample (time point)
     contributions = pd.DataFrame(
         pmf.contributions_.values,
         index=concentrations.index,
@@ -116,7 +119,9 @@ def analyze_dataset(dataset_name, dataset_info, output_dir, n_components=7):
     profiles.to_csv(output_dir / f"{dataset_name}_factor_profiles.csv")
 
     print(
-        f"PMF analysis complete. Results saved to {output_dir}/{dataset_name}_factor_contributions.csv and {output_dir}/{dataset_name}_factor_profiles.csv"
+        f"PMF analysis complete. Results saved to {output_dir}/"
+        f"{dataset_name}_factor_contributions.csv and "
+        f"{output_dir}/{dataset_name}_factor_profiles.csv"
     )
 
     # Generate all visualizations
@@ -373,9 +378,9 @@ def generate_visualizations(
         ax.legend(handles=legend_elements, loc="upper right")
 
         plt.tight_layout()
+        factor_filename = f"{factor_name.lower().replace(' ', '_')}"
         plt.savefig(
-            output_dir
-            / f"{dataset_name}_factor_profile_{factor_name.lower().replace(' ', '_')}.png",
+            output_dir / f"{dataset_name}_factor_profile_{factor_filename}.png",
             dpi=300,
             bbox_inches="tight",
         )
@@ -432,9 +437,9 @@ def generate_visualizations(
         ax.spines["right"].set_visible(False)
 
         plt.tight_layout()
+        factor_filename = f"{factor_name.lower().replace(' ', '_')}"
         plt.savefig(
-            output_dir
-            / f"{dataset_name}_factor_contributions_{factor_name.lower().replace(' ', '_')}.png",
+            output_dir / f"{dataset_name}_factor_contributions_{factor_filename}.png",
             dpi=300,
             bbox_inches="tight",
         )
@@ -445,7 +450,8 @@ def generate_visualizations(
         f"- Individual factor profile plots: {dataset_name}_factor_profile_factor_X.png"
     )
     print(
-        f"- Individual factor contribution plots: {dataset_name}_factor_contributions_factor_X.png"
+        f"- Individual factor contribution plots: "
+        f"{dataset_name}_factor_contributions_factor_X.png"
     )
 
 

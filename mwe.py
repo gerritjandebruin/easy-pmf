@@ -67,7 +67,8 @@ uncertainties = uncertainties.set_index(uncertainties.columns[0])
 # Ensure both datasets have the same shape and columns
 if concentrations.shape != uncertainties.shape:
     print(
-        f"Warning: Concentrations shape {concentrations.shape} != Uncertainties shape {uncertainties.shape}"
+        f"Warning: Concentrations shape {concentrations.shape} != "
+        f"Uncertainties shape {uncertainties.shape}"
     )
 
 if not concentrations.columns.equals(uncertainties.columns):
@@ -84,7 +85,8 @@ uncertainties = uncertainties[
 ]  # Keep same columns in uncertainties
 
 print(
-    f"Data preprocessing: Removed {initial_cols - len(concentrations.columns)} columns with all zeros or NaN"
+    f"Data preprocessing: Removed "
+    f"{initial_cols - len(concentrations.columns)} columns with all zeros or NaN"
 )
 print(f"Final data shape: {concentrations.shape}")
 print(
@@ -101,7 +103,8 @@ pmf = PMF(n_components=7, random_state=42)
 pmf.fit(concentrations, uncertainties)
 
 # Save the results
-# The contributions tell you how much each factor contributes to each sample (time point)
+# The contributions tell you how much each factor contributes
+# to each sample (time point)
 contributions = pd.DataFrame(
     pmf.contributions_.values,
     index=concentrations.index,
@@ -118,7 +121,9 @@ profiles = pd.DataFrame(
 profiles.to_csv(output_dir / f"{dataset_name}_factor_profiles.csv")
 
 print(
-    f"PMF analysis complete. Results saved to {output_dir}/{dataset_name}_factor_contributions.csv and {output_dir}/{dataset_name}_factor_profiles.csv"
+    f"PMF analysis complete. Results saved to {output_dir}/"
+    f"{dataset_name}_factor_contributions.csv and "
+    f"{output_dir}/{dataset_name}_factor_profiles.csv"
 )
 
 # Create heatmap visualizations
@@ -257,7 +262,8 @@ for _factor_idx, factor_name in enumerate(profiles.index):
     concentrations = factor_data.values
 
     # Calculate percentage of each species explained by this factor
-    # For each species, calculate what % this factor contributes to the total across all factors
+    # For each species, calculate what % this factor contributes
+    # to the total across all factors
     total_species_across_factors = profiles.sum(
         axis=0
     )  # Sum each species across all factors
@@ -384,9 +390,9 @@ for _factor_idx, factor_name in enumerate(contributions.columns):
     ax.spines["right"].set_visible(False)
 
     plt.tight_layout()
+    factor_filename = f"{factor_name.lower().replace(' ', '_')}"
     plt.savefig(
-        output_dir
-        / f"{dataset_name}_factor_contributions_{factor_name.lower().replace(' ', '_')}.png",
+        output_dir / f"{dataset_name}_factor_contributions_{factor_filename}.png",
         dpi=300,
         bbox_inches="tight",
     )
@@ -471,7 +477,8 @@ plt.close()
 print("EPA PMF-style visualizations saved:")
 print(f"- Individual factor profile plots: {dataset_name}_factor_profile_factor_X.png")
 print(
-    f"- Individual factor contribution plots: {dataset_name}_factor_contributions_factor_X.png"
+    f"- Individual factor contribution plots: "
+    f"{dataset_name}_factor_contributions_factor_X.png"
 )
 print(f"- {dataset_name}_all_factor_profiles_overview.png")
 print(f"- {dataset_name}_all_factor_contributions_overview.png")
@@ -479,7 +486,8 @@ print(f"- {dataset_name}_all_factor_contributions_overview.png")
 print(f"\nAnalysis complete for {dataset_name} dataset!")
 print(f"All outputs saved to: {output_dir.absolute()}")
 print(
-    "\nTo analyze a different dataset, change the 'dataset_name' variable at the top of the script to:"
+    "\nTo analyze a different dataset, change the 'dataset_name' variable "
+    "at the top of the script to:"
 )
 print("- 'BatonRouge'")
 print("- 'StLouis'")

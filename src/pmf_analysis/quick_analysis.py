@@ -76,7 +76,7 @@ def select_dataset(datasets):
         try:
             choice = (
                 input(
-                    f"Select dataset (1-{len(dataset_list)}) or 'all' for all datasets: "
+                    f"Select dataset (1-{len(dataset_list)}) or 'all' for all: "
                 )
                 .strip()
                 .lower()
@@ -206,7 +206,8 @@ def main():
     if not datasets:
         print("\nNo datasets found!")
         print(
-            "Please ensure you have matching concentration and uncertainty files in the 'data' folder."
+            "Please ensure you have matching concentration and uncertainty "
+            "files in the 'data' folder."
         )
         return
 

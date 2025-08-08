@@ -378,9 +378,9 @@ def generate_visualizations(
         ax.legend(handles=legend_elements, loc="upper right")
 
         plt.tight_layout()
+        factor_filename = f"{factor_name.lower().replace(' ', '_')}"
         plt.savefig(
-            output_dir
-            / f"{dataset_name}_factor_profile_{factor_name.lower().replace(' ', '_')}.png",
+            output_dir / f"{dataset_name}_factor_profile_{factor_filename}.png",
             dpi=300,
             bbox_inches="tight",
         )
@@ -437,9 +437,9 @@ def generate_visualizations(
         ax.spines["right"].set_visible(False)
 
         plt.tight_layout()
+        factor_filename = f"{factor_name.lower().replace(' ', '_')}"
         plt.savefig(
-            output_dir
-            / f"{dataset_name}_factor_contributions_{factor_name.lower().replace(' ', '_')}.png",
+            output_dir / f"{dataset_name}_factor_contributions_{factor_filename}.png",
             dpi=300,
             bbox_inches="tight",
         )
