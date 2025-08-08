@@ -1,4 +1,4 @@
-"""Test suite for Easy PMF package
+"""Test suite for Easy PMF package.
 
 Basic tests to ensure the PMF algorithm works correctly.
 """

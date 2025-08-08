@@ -1,7 +1,8 @@
-"""Easy PMF - An easy-to-use package for Positive Matrix Factorization (PMF) analysis
+"""Easy PMF - An easy-to-use package for Positive Matrix Factorization (PMF) analysis.
 
-This package provides a simple interface for performing PMF analysis on environmental data,
-with built-in visualization capabilities and support for multiple dataset formats.
+This package provides a simple interface for performing PMF analysis on
+environmental data, with built-in visualization capabilities and support for
+multiple dataset formats.
 """
 
 __version__ = "0.1.0"
@@ -16,7 +17,7 @@ import pandas as pd
 
 
 class PMF:
-    """Positive Matrix Factorization (PMF)
+    """Positive Matrix Factorization (PMF).
 
     This class implements the PMF algorithm, which is used to decompose a matrix
     into two non-negative matrices for source apportionment analysis.
@@ -71,6 +72,10 @@ class PMF:
         tol: float = 1e-4,
         random_state: Optional[int] = None,
     ):
+        """Initialize the PMF model.
+        
+        Parameters are described in the class docstring.
+        """
         if n_components <= 0:
             raise ValueError("n_components must be a positive integer")
         if max_iter <= 0:
@@ -99,7 +104,8 @@ class PMF:
             columns are chemical species.
         U : pandas.DataFrame, optional
             The uncertainty data corresponding to X. Must have the same shape as X.
-            If not provided, uniform uncertainty of 1.0 will be used for all data points.
+            If not provided, uniform uncertainty of 1.0 will be used for all
+            data points.
 
         Returns:
         -------
@@ -133,7 +139,9 @@ class PMF:
                 raise ValueError("X and U must have the same shape")
             if (U <= 0).any().any():
                 warnings.warn(
-                    "U contains zero or negative values. These will be replaced with a small positive value."
+                    "U contains zero or negative values. These will be replaced "
+                    "with a small positive value.",
+                    stacklevel=2,
                 )
 
         # Store original index and columns for later use
@@ -167,7 +175,7 @@ class PMF:
         self._convergence_history = []
 
         # Iterate until convergence
-        for i in range(self.max_iter):
+        for _i in range(self.max_iter):
             # Store old G and F for convergence check
             G_old = G.copy()
             F_old = F.copy()
@@ -198,7 +206,7 @@ class PMF:
                 break
 
         # Store the number of iterations performed
-        self.n_iter_ = i + 1
+        self.n_iter_ = _i + 1
 
         # Save the factor matrices as DataFrames with proper indices and columns
         self.contributions_ = pd.DataFrame(
@@ -216,7 +224,8 @@ class PMF:
         if not self.converged_:
             warnings.warn(
                 f"PMF did not converge after {self.max_iter} iterations. "
-                f"Consider increasing max_iter or adjusting tolerance."
+                f"Consider increasing max_iter or adjusting tolerance.",
+                stacklevel=2,
             )
 
         return self

@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
+
 from pmf import PMF
 
 # Create output directory if it doesn't exist
@@ -213,7 +214,7 @@ for i, factor in enumerate(profiles.index):
         ax.set_ylabel("Concentration")
 
         # Add value labels on bars
-        for j, bar in enumerate(bars):
+        for _j, bar in enumerate(bars):
             height = bar.get_height()
             ax.text(
                 bar.get_x() + bar.get_width() / 2.0,
@@ -247,7 +248,7 @@ print(f"- {dataset_name}_top_species_by_factor.png")
 print("Creating EPA PMF-style visualizations...")
 
 # 5. EPA-style Factor Profile plots (one plot per factor)
-for factor_idx, factor_name in enumerate(profiles.index):
+for _factor_idx, factor_name in enumerate(profiles.index):
     fig, ax = plt.subplots(figsize=(14, 8))
 
     # Get the factor profile data
@@ -341,7 +342,7 @@ for factor_idx, factor_name in enumerate(profiles.index):
     plt.close()
 
 # 6. EPA-style Factor Contributions time series plots (one plot per factor)
-for factor_idx, factor_name in enumerate(contributions.columns):
+for _factor_idx, factor_name in enumerate(contributions.columns):
     fig, ax = plt.subplots(figsize=(14, 6))
 
     # Get the factor contributions over time

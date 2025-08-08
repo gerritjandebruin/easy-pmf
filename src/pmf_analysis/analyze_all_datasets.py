@@ -1,4 +1,4 @@
-"""PMF Analysis for All Datasets
+"""PMF Analysis for All Datasets.
 
 This script runs PMF analysis on all available datasets in the data folder.
 It creates organized outputs in the output folder with dataset-specific naming.
@@ -138,7 +138,7 @@ def generate_visualizations(
     sns.set_palette("viridis")
 
     # 1. Factor Profiles Heatmap
-    fig, ax = plt.subplots(figsize=(16, 8))
+    _fig, ax = plt.subplots(figsize=(16, 8))
     sns.heatmap(
         profiles,
         annot=False,
@@ -163,7 +163,7 @@ def generate_visualizations(
     plt.close()
 
     # 2. Factor Contributions Heatmap (time series)
-    fig, ax = plt.subplots(figsize=(12, 10))
+    _fig, ax = plt.subplots(figsize=(12, 10))
     # For better visualization, we'll show every 5th time point to avoid overcrowding
     step = max(1, len(contributions) // 30)  # Show ~30 time points maximum
     contributions_subset = contributions.iloc[::step, :]
@@ -192,7 +192,7 @@ def generate_visualizations(
     plt.close()
 
     # 3. Correlation matrix of factors
-    fig, ax = plt.subplots(figsize=(8, 6))
+    _fig, ax = plt.subplots(figsize=(8, 6))
     correlation_matrix = contributions.corr()
     sns.heatmap(
         correlation_matrix,
@@ -215,7 +215,7 @@ def generate_visualizations(
     plt.close()
 
     # 4. Top species contributions for each factor
-    fig, axes = plt.subplots(2, 4, figsize=(20, 10))
+    _fig, axes = plt.subplots(2, 4, figsize=(20, 10))
     axes = axes.flatten()
 
     for i, factor in enumerate(profiles.index):
@@ -235,7 +235,7 @@ def generate_visualizations(
             ax.set_ylabel("Concentration")
 
             # Add value labels on bars
-            for j, bar in enumerate(bars):
+            for _j, bar in enumerate(bars):
                 height = bar.get_height()
                 ax.text(
                     bar.get_x() + bar.get_width() / 2.0,
@@ -273,8 +273,8 @@ def generate_visualizations(
     print("Creating EPA PMF-style visualizations...")
 
     # 5. EPA-style Factor Profile plots (one plot per factor)
-    for factor_idx, factor_name in enumerate(profiles.index):
-        fig, ax = plt.subplots(figsize=(14, 8))
+    for _factor_idx, factor_name in enumerate(profiles.index):
+        _fig, ax = plt.subplots(figsize=(14, 8))
 
         # Get the factor profile data
         factor_data = profiles.loc[factor_name]
@@ -382,8 +382,8 @@ def generate_visualizations(
         plt.close()
 
     # 6. EPA-style Factor Contributions time series plots (one plot per factor)
-    for factor_idx, factor_name in enumerate(contributions.columns):
-        fig, ax = plt.subplots(figsize=(14, 6))
+    for _factor_idx, factor_name in enumerate(contributions.columns):
+        _fig, ax = plt.subplots(figsize=(14, 6))
 
         # Get the factor contributions over time
         factor_contributions = contributions[factor_name]
