@@ -1,0 +1,8 @@
+include README.md
+include LICENSE
+include CHANGELOG.md
+recursive-include src/pmf_analysis/data *.csv *.txt *.xls
+recursive-include src/pmf_analysis/examples *.py
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
+recursive-exclude * .DS_Store
