@@ -5,6 +5,7 @@ Simply run this script and follow the prompts to select which dataset to analyze
 """
 
 from pathlib import Path
+from typing import Optional
 
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -13,7 +14,7 @@ import seaborn as sns
 from . import PMF
 
 
-def get_available_datasets():
+def get_available_datasets() -> dict[str, dict[str, str]]:
     """Get list of available datasets from the data folder."""
     data_dir = Path("data")
     if not data_dir.exists():
@@ -53,7 +54,7 @@ def get_available_datasets():
     return datasets
 
 
-def select_dataset(datasets):
+def select_dataset(datasets: dict[str, dict[str, str]]) -> Optional[str]:
     """Interactive dataset selection."""
     if not datasets:
         print("No datasets found in the data folder!")
@@ -93,7 +94,9 @@ def select_dataset(datasets):
             print("Please enter a valid number or 'all'")
 
 
-def analyze_single_dataset(dataset_name, dataset_info, output_dir):
+def analyze_single_dataset(
+    dataset_name: str, dataset_info: dict[str, str], output_dir: Path
+) -> bool:
     """Analyze a single dataset - simplified version of the main analysis function."""
     print(f"\nAnalyzing {dataset_name}...")
     print("-" * 40)
@@ -126,6 +129,10 @@ def analyze_single_dataset(dataset_name, dataset_info, output_dir):
 
         # Save results
         clean_name = dataset_name.replace(" ", "")
+
+        # Ensure PMF was fitted successfully
+        if pmf.contributions_ is None or pmf.profiles_ is None:
+            raise RuntimeError("PMF fitting failed")
 
         contributions = pd.DataFrame(
             pmf.contributions_.values,
@@ -189,7 +196,7 @@ def analyze_single_dataset(dataset_name, dataset_info, output_dir):
         return False
 
 
-def main():
+def main() -> None:
     """Main function for interactive PMF analysis."""
     print("=== Quick PMF Analysis ===")
     print("This tool will help you analyze environmental datasets using PMF.")
