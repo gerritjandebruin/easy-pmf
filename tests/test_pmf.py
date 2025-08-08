@@ -20,13 +20,13 @@ class TestPMF:
         n_samples, n_features, n_components = 50, 10, 3
 
         # Generate synthetic factor matrices
-        G_true = np.random.exponential(2, (n_samples, n_components))
-        F_true = np.random.exponential(1, (n_components, n_features))
+        g_true = np.random.exponential(2, (n_samples, n_components))
+        f_true = np.random.exponential(1, (n_components, n_features))
 
         # Generate synthetic data
-        X_true = G_true @ F_true
-        noise = np.random.normal(0, 0.1 * X_true.mean(), X_true.shape)
-        self.X = np.maximum(X_true + noise, 0.01)  # Ensure positive values
+        x_true = g_true @ f_true
+        noise = np.random.normal(0, 0.1 * x_true.mean(), x_true.shape)
+        self.X = np.maximum(x_true + noise, 0.01)  # Ensure positive values
 
         # Create uncertainty matrix
         self.U = 0.1 * self.X + 0.01
@@ -80,13 +80,13 @@ class TestPMF:
 def test_legacy_compatibility():
     """Test compatibility with the original test."""
     # Create a dummy dataset
-    X = pd.DataFrame(np.random.rand(100, 10))
+    x = pd.DataFrame(np.random.rand(100, 10))
 
     # Create a PMF object
     pmf = PMF(n_components=5)
 
     # Fit the model
-    pmf.fit(X)
+    pmf.fit(x)
 
     # Check that the factor matrices have the correct shape
     assert pmf.contributions_.shape == (100, 5)

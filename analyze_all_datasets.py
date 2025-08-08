@@ -64,7 +64,8 @@ def analyze_dataset(dataset_name, dataset_info, output_dir, n_components=7):
     # Ensure both datasets have the same shape and columns
     if concentrations.shape != uncertainties.shape:
         print(
-            f"Warning: Concentrations shape {concentrations.shape} != Uncertainties shape {uncertainties.shape}"
+            f"Warning: Concentrations shape {concentrations.shape} != "
+            f"Uncertainties shape {uncertainties.shape}"
         )
 
     if not concentrations.columns.equals(uncertainties.columns):
@@ -81,7 +82,8 @@ def analyze_dataset(dataset_name, dataset_info, output_dir, n_components=7):
     ]  # Keep same columns in uncertainties
 
     print(
-        f"Data preprocessing: Removed {initial_cols - len(concentrations.columns)} columns with all zeros or NaN"
+        f"Data preprocessing: Removed "
+        f"{initial_cols - len(concentrations.columns)} columns with all zeros or NaN"
     )
     print(f"Final data shape: {concentrations.shape}")
     print(
@@ -116,7 +118,9 @@ def analyze_dataset(dataset_name, dataset_info, output_dir, n_components=7):
     profiles.to_csv(output_dir / f"{dataset_name}_factor_profiles.csv")
 
     print(
-        f"PMF analysis complete. Results saved to {output_dir}/{dataset_name}_factor_contributions.csv and {output_dir}/{dataset_name}_factor_profiles.csv"
+        f"PMF analysis complete. Results saved to {output_dir}/"
+        f"{dataset_name}_factor_contributions.csv and "
+        f"{output_dir}/{dataset_name}_factor_profiles.csv"
     )
 
     # Generate all visualizations

@@ -73,7 +73,7 @@ class PMF:
         random_state: Optional[int] = None,
     ):
         """Initialize the PMF model.
-        
+
         Parameters are described in the class docstring.
         """
         if n_components <= 0:
@@ -94,16 +94,16 @@ class PMF:
         self.n_iter_ = None
         self.converged_ = False
 
-    def fit(self, X: pd.DataFrame, U: Optional[pd.DataFrame] = None) -> "PMF":
+    def fit(self, x: pd.DataFrame, u: Optional[pd.DataFrame] = None) -> "PMF":
         """Fit the PMF model to the data.
 
         Parameters
         ----------
-        X : pandas.DataFrame
+        x : pandas.DataFrame
             The concentration data to fit the model to. Rows are samples (time points),
             columns are chemical species.
-        U : pandas.DataFrame, optional
-            The uncertainty data corresponding to X. Must have the same shape as X.
+        u : pandas.DataFrame, optional
+            The uncertainty data corresponding to x. Must have the same shape as x.
             If not provided, uniform uncertainty of 1.0 will be used for all
             data points.
 
@@ -115,88 +115,89 @@ class PMF:
         Raises:
         ------
         ValueError
-            If X contains negative values, if X and U have different shapes,
-            or if X contains NaN values.
+            If x contains negative values, if x and u have different shapes,
+            or if x contains NaN values.
         """
         # Input validation
-        if not isinstance(X, pd.DataFrame):
-            raise TypeError("X must be a pandas DataFrame")
+        if not isinstance(x, pd.DataFrame):
+            raise TypeError("x must be a pandas DataFrame")
 
-        if X.isnull().any().any():
+        if x.isnull().any().any():
             raise ValueError(
-                "X contains NaN values. Please handle missing data before fitting."
+                "x contains NaN values. Please handle missing data before fitting."
             )
 
-        if (X < 0).any().any():
+        if (x < 0).any().any():
             raise ValueError(
-                "X contains negative values. PMF requires non-negative data."
+                "x contains negative values. PMF requires non-negative data."
             )
 
-        if U is not None:
-            if not isinstance(U, pd.DataFrame):
-                raise TypeError("U must be a pandas DataFrame")
-            if X.shape != U.shape:
-                raise ValueError("X and U must have the same shape")
-            if (U <= 0).any().any():
+        if u is not None:
+            if not isinstance(u, pd.DataFrame):
+                raise TypeError("u must be a pandas DataFrame")
+            if x.shape != u.shape:
+                raise ValueError("x and u must have the same shape")
+            if (u <= 0).any().any():
                 warnings.warn(
-                    "U contains zero or negative values. These will be replaced "
+                    "u contains zero or negative values. These will be replaced "
                     "with a small positive value.",
                     stacklevel=2,
                 )
 
         # Store original index and columns for later use
-        self._X_index = X.index
-        self._X_columns = X.columns
+        self._X_index = x.index
+        self._X_columns = x.columns
 
         # Convert the data to numpy arrays
-        X_array = X.values.astype(float)
-        if U is not None:
-            U_array = U.values.astype(float)
+        x_array = x.values.astype(float)
+        if u is not None:
+            u_array = u.values.astype(float)
         else:
-            U_array = np.ones_like(X_array)
+            u_array = np.ones_like(x_array)
 
-        # Replace zeros or small values in U with a small number to avoid division by zero
-        U_array[U_array <= 0] = 1e-9
+        # Replace zeros or small values in u with a small number to
+        # avoid division by zero
+        u_array[u_array <= 0] = 1e-9
 
         # Get the dimensions of the data
-        n_samples, n_features = X_array.shape
+        n_samples, n_features = x_array.shape
 
         # Initialize the random number generator
         rng = np.random.default_rng(self.random_state)
 
         # Initialize the factor matrices with small positive random values
-        G = rng.random((n_samples, self.n_components)) + 1e-6
-        F = rng.random((self.n_components, n_features)) + 1e-6
+        g = rng.random((n_samples, self.n_components)) + 1e-6
+        f = rng.random((self.n_components, n_features)) + 1e-6
 
-        # Pre-calculate the squared inverse of U
-        U_inv_sq = 1 / (U_array**2)
+        # Pre-calculate the squared inverse of u
+        u_inv_sq = 1 / (u_array**2)
 
         # Store convergence history for debugging
         self._convergence_history = []
 
         # Iterate until convergence
         for _i in range(self.max_iter):
-            # Store old G and F for convergence check
-            G_old = G.copy()
-            F_old = F.copy()
+            # Store old g and f for convergence check
+            g_old = g.copy()
+            f_old = f.copy()
 
-            # Update the F matrix (profiles)
-            numerator = G.T @ (X_array * U_inv_sq)
-            denominator = G.T @ ((G @ F) * U_inv_sq)
+            # Update the f matrix (profiles)
+            numerator = g.T @ (x_array * u_inv_sq)
+            denominator = g.T @ ((g @ f) * u_inv_sq)
             # Avoid division by zero
             denominator[denominator == 0] = 1e-10
-            F = F * numerator / denominator
+            f = f * numerator / denominator
 
-            # Update the G matrix (contributions)
-            numerator = (X_array * U_inv_sq) @ F.T
-            denominator = ((G @ F) * U_inv_sq) @ F.T
+            # Update the g matrix (contributions)
+            numerator = (x_array * u_inv_sq) @ f.T
+            denominator = ((g @ f) * u_inv_sq) @ f.T
             # Avoid division by zero
             denominator[denominator == 0] = 1e-10
-            G = G * numerator / denominator
+            g = g * numerator / denominator
 
             # Check for convergence
-            g_diff = np.linalg.norm(G - G_old) / (np.linalg.norm(G_old) + 1e-10)
-            f_diff = np.linalg.norm(F - F_old) / (np.linalg.norm(F_old) + 1e-10)
+            g_diff = np.linalg.norm(g - g_old) / (np.linalg.norm(g_old) + 1e-10)
+            f_diff = np.linalg.norm(f - f_old) / (np.linalg.norm(f_old) + 1e-10)
 
             total_diff = max(g_diff, f_diff)
             self._convergence_history.append(total_diff)
@@ -210,13 +211,13 @@ class PMF:
 
         # Save the factor matrices as DataFrames with proper indices and columns
         self.contributions_ = pd.DataFrame(
-            G,
+            g,
             index=self._X_index,
             columns=[f"Factor_{i + 1}" for i in range(self.n_components)],
         )
 
         self.profiles_ = pd.DataFrame(
-            F,
+            f,
             index=[f"Factor_{i + 1}" for i in range(self.n_components)],
             columns=self._X_columns,
         )
@@ -231,13 +232,13 @@ class PMF:
         return self
 
     def transform(
-        self, X: pd.DataFrame, U: Optional[pd.DataFrame] = None
+        self, x: pd.DataFrame, u: Optional[pd.DataFrame] = None
     ) -> pd.DataFrame:
         """Transform new data using the fitted PMF model.
 
         Parameters
         ----------
-        X : pandas.DataFrame
+        x : pandas.DataFrame
             New concentration data to transform.
         U : pandas.DataFrame, optional
             Uncertainty data for X.
@@ -252,31 +253,31 @@ class PMF:
 
         # This is a simplified transformation - in practice, you might want
         # to implement a more sophisticated approach
-        if not X.columns.equals(self._X_columns):
-            raise ValueError("X must have the same columns as the training data")
+        if not x.columns.equals(self._X_columns):
+            raise ValueError("x must have the same columns as the training data")
 
         # Use least squares to find contributions given fixed profiles
-        F = self.profiles_.values
-        X_array = X.values
+        f = self.profiles_.values
+        x_array = x.values
 
-        # Solve for G: X ≈ G @ F
-        G, _, _, _ = np.linalg.lstsq(F.T, X_array.T, rcond=None)
-        G = np.maximum(G.T, 0)  # Ensure non-negativity
+        # Solve for g: x ≈ g @ f
+        g, _, _, _ = np.linalg.lstsq(f.T, x_array.T, rcond=None)
+        g = np.maximum(g.T, 0)  # Ensure non-negativity
 
         return pd.DataFrame(
-            G,
-            index=X.index,
+            g,
+            index=x.index,
             columns=[f"Factor_{i + 1}" for i in range(self.n_components)],
         )
 
-    def score(self, X: pd.DataFrame, U: Optional[pd.DataFrame] = None) -> float:
+    def score(self, x: pd.DataFrame, u: Optional[pd.DataFrame] = None) -> float:
         """Calculate the goodness of fit (Q value) for the PMF model.
 
         Parameters
         ----------
-        X : pandas.DataFrame
+        x : pandas.DataFrame
             Concentration data.
-        U : pandas.DataFrame, optional
+        u : pandas.DataFrame, optional
             Uncertainty data.
 
         Returns:
@@ -287,20 +288,20 @@ class PMF:
         if self.contributions_ is None or self.profiles_ is None:
             raise ValueError("Model must be fitted before scoring")
 
-        X_array = X.values
-        if U is not None:
-            U_array = U.values
+        x_array = x.values
+        if u is not None:
+            u_array = u.values
         else:
-            U_array = np.ones_like(X_array)
+            u_array = np.ones_like(x_array)
 
         # Replace zeros with small values
-        U_array[U_array <= 0] = 1e-9
+        u_array[u_array <= 0] = 1e-9
 
         # Calculate reconstructed data
-        X_reconstructed = self.contributions_.values @ self.profiles_.values
+        x_reconstructed = self.contributions_.values @ self.profiles_.values
 
         # Calculate Q value (weighted sum of squared residuals)
-        residuals = (X_array - X_reconstructed) / U_array
+        residuals = (x_array - x_reconstructed) / u_array
         q_value = np.sum(residuals**2)
 
         return q_value
