@@ -75,9 +75,7 @@ def select_dataset(datasets):
     while True:
         try:
             choice = (
-                input(
-                    f"Select dataset (1-{len(dataset_list)}) or 'all' for all: "
-                )
+                input(f"Select dataset (1-{len(dataset_list)}) or 'all' for all: ")
                 .strip()
                 .lower()
             )
