@@ -45,6 +45,20 @@ We use modern Python tooling for development:
 - **pytest**: For testing
 - **mypy**: For static type checking
 - **mkdocs**: For documentation
+- **pre-commit**: For automated quality checks on every commit
+
+### CI/CD Infrastructure
+
+The project features comprehensive automated workflows:
+
+- **✅ Continuous Integration**: Automated testing across Python 3.9-3.12 on Ubuntu, macOS, and Windows
+- **✅ Code Quality**: Pre-commit hooks and CI checks for linting, formatting, and type validation
+- **✅ Security**: Automated dependency vulnerability scanning with Bandit
+- **✅ Documentation**: Automatic deployment to GitHub Pages on every commit
+- **✅ Publishing**: Automated PyPI publishing on tagged releases
+- **✅ Maintenance**: Weekly dependency updates and repository housekeeping
+
+All quality checks that run in CI also run locally via pre-commit hooks, ensuring consistent code quality.
 
 ## Development Setup
 
@@ -59,12 +73,15 @@ cd easy-pmf
 2. **Set Up Development Environment**
 
 ```bash
-# Create and activate virtual environment with uv
-uv venv
-source .venv/bin/activate  # On Windows: .venv\\Scripts\\activate
+# Install uv (modern Python package manager) if not already installed
+# Windows: https://docs.astral.sh/uv/getting-started/installation/
+# macOS/Linux: curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# Install development dependencies
+# Create development environment and install all dependencies
 uv sync --all-extras
+
+# Install pre-commit hooks for automated code quality checks
+uv run pre-commit install
 ```
 
 3. **Verify Installation**
@@ -73,11 +90,15 @@ uv sync --all-extras
 # Run tests to ensure everything works
 uv run pytest
 
-# Check code style
-uv run ruff check .
+# Check code style and auto-fix issues
+uv run ruff check --fix .
+uv run ruff format .
 
-# Verify type checking
+# Verify type checking passes
 uv run mypy .
+
+# Test pre-commit hooks
+uv run pre-commit run --all-files
 ```
 
 ## Contributing Code
@@ -126,12 +147,15 @@ uv run pytest
 # Run tests with coverage
 uv run pytest --cov=easy_pmf
 
-# Check code style
-uv run ruff check .
+# Run code quality checks (same as pre-commit)
+uv run ruff check --fix .
 uv run ruff format .
 
 # Type checking
 uv run mypy .
+
+# Test pre-commit hooks manually
+uv run pre-commit run --all-files
 ```
 
 4. **Commit Your Changes**

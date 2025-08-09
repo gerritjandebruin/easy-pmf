@@ -193,17 +193,80 @@ for site, files in datasets.items():
     print(f"  Converged: {results[site]['converged']}")
 ```
 
+## 🔧 Development & Infrastructure
+
+### CI/CD Pipeline
+
+This project features a comprehensive CI/CD infrastructure:
+
+- **✅ Automated Testing**: Matrix testing across Python 3.9-3.12 on Ubuntu, macOS, and Windows
+- **✅ Code Quality**: Automated linting, formatting, and type checking with pre-commit hooks
+- **✅ Security Scanning**: Dependency vulnerability scanning with Bandit
+- **✅ Documentation**: Automatic deployment to GitHub Pages
+- **✅ Package Publishing**: Automated PyPI publishing on releases
+- **✅ Dependency Management**: Weekly dependency updates and maintenance
+
+### Code Quality Standards
+
+- **Type Safety**: Full type annotation coverage with mypy validation
+- **Code Style**: Enforced with Ruff (linting and formatting)
+- **Testing**: Comprehensive test suite with pytest
+- **Documentation**: Auto-generated docs with MkDocs Material
+- **Pre-commit Hooks**: Quality checks run on every commit using `uv`
+
 ## 🤝 Contributing
 
-We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details on:
+
+- Development setup with `uv` and pre-commit hooks
+- Code quality standards and automated checks
+- Testing requirements and CI/CD infrastructure
+- Documentation guidelines and examples
+- Pull request process and review requirements
+
+### Quick Start for Contributors
+
+```bash
+# Fork and clone the repository
+git clone https://github.com/YOUR_USERNAME/easy-pmf.git
+cd easy-pmf
+
+# Set up development environment
+uv sync --all-extras
+uv run pre-commit install
+
+# Make changes and test
+uv run pytest
+uv run pre-commit run --all-files
+```
 
 ### Development Setup
 
 ```bash
-git clone https://github.com/easy-pmf/easy-pmf.git
+git clone https://github.com/gerritjandebruin/easy-pmf.git
 cd easy-pmf
-pip install -e ".[dev]"
-pytest
+
+# Install uv (modern Python package manager)
+# On Windows: https://docs.astral.sh/uv/getting-started/installation/
+# On macOS/Linux: curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Create development environment and install dependencies
+uv sync --all-extras
+
+# Install pre-commit hooks for code quality
+uv run pre-commit install
+
+# Run tests to verify setup
+uv run pytest
+
+# Run type checking
+uv run mypy .
+
+# Run code formatting and linting
+uv run ruff check --fix
+uv run ruff format
 ```
 
 ## 📄 License
@@ -217,9 +280,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- **Documentation**: [https://easy-pmf.readthedocs.io](https://easy-pmf.readthedocs.io)
-- **Issues**: [GitHub Issues](https://github.com/easy-pmf/easy-pmf/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/easy-pmf/easy-pmf/discussions)
+- **Documentation**: [https://gerritjandebruin.github.io/easy-pmf/](https://gerritjandebruin.github.io/easy-pmf/)
+- **Issues**: [GitHub Issues](https://github.com/gerritjandebruin/easy-pmf/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/gerritjandebruin/easy-pmf/discussions)
 
 ---
 
