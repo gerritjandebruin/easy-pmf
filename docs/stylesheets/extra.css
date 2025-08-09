@@ -1,0 +1,105 @@
+/* Extra CSS for Easy PMF documentation */
+
+/* Custom color scheme */
+:root {
+  --md-primary-fg-color: #00695c;
+  --md-primary-fg-color--light: #26a69a;
+  --md-primary-fg-color--dark: #004d40;
+  --md-accent-fg-color: #00bcd4;
+}
+
+/* Code block improvements */
+.highlight {
+  border-radius: 4px;
+}
+
+/* Improve table styling */
+table {
+  border-collapse: collapse;
+  margin: 1em 0;
+}
+
+table th {
+  background-color: var(--md-primary-fg-color);
+  color: white;
+  font-weight: 600;
+}
+
+table td, table th {
+  border: 1px solid #ddd;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+/* Improve admonition styling */
+.md-typeset .admonition {
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Custom styling for API documentation */
+.doc-string {
+  margin: 1em 0;
+}
+
+/* Improve navigation */
+.md-nav__item .md-nav__link {
+  border-radius: 4px;
+}
+
+.md-nav__item .md-nav__link:hover {
+  background-color: rgba(0, 105, 92, 0.1);
+}
+
+/* Custom styling for mermaid diagrams */
+.mermaid {
+  text-align: center;
+  margin: 2em 0;
+}
+
+/* Improve code inline styling */
+.md-typeset code {
+  background-color: rgba(0, 105, 92, 0.1);
+  color: var(--md-primary-fg-color--dark);
+  border-radius: 3px;
+  padding: 2px 4px;
+  font-size: 0.9em;
+}
+
+/* Custom warning boxes */
+.md-typeset .admonition.warning {
+  border-left: 4px solid #ff9800;
+}
+
+.md-typeset .admonition.tip {
+  border-left: 4px solid #4caf50;
+}
+
+/* Improve footer */
+.md-footer {
+  background-color: var(--md-primary-fg-color--dark);
+}
+
+/* Custom styling for feature boxes */
+.feature-box {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 8px;
+  padding: 1.5em;
+  margin: 1em 0;
+  border-left: 4px solid var(--md-accent-fg-color);
+}
+
+/* Responsive design improvements */
+@media screen and (max-width: 768px) {
+  table {
+    font-size: 0.9em;
+  }
+  
+  table th, table td {
+    padding: 6px 8px;
+  }
+}

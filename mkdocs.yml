@@ -1,0 +1,118 @@
+site_name: Easy PMF Documentation
+site_description: An easy-to-use package for Positive Matrix Factorization (PMF) analysis of environmental data
+site_author: Gerrit Jan de Bruin
+site_url: https://easy-pmf.readthedocs.io
+
+repo_name: gerritjandebruin/easy-pmf
+repo_url: https://github.com/gerritjandebruin/easy-pmf
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  palette:
+    # Palette toggle for light mode
+    - scheme: default
+      primary: teal
+      accent: cyan
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    # Palette toggle for dark mode
+    - scheme: slate
+      primary: teal
+      accent: cyan
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.indexes
+    - navigation.top
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - attr_list
+  - md_in_html
+  - tables
+  - footnotes
+  - pymdownx.critic
+  - pymdownx.caret
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.tilde
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            docstring_style: google
+            show_source: true
+            show_root_heading: true
+            show_root_toc_entry: false
+            show_object_full_path: false
+            show_category_heading: true
+            show_if_no_docstring: true
+            inherited_members: true
+            members_order: source
+            separate_signature: true
+            unwrap_annotated: true
+            filters: ["!^_"]
+            merge_init_into_class: true
+            docstring_section_style: table
+            signature_crossrefs: true
+  - autorefs
+
+nav:
+  - Home: index.md
+  - Getting Started:
+    - Installation: getting-started/installation.md
+    - Quick Start: getting-started/quick-start.md
+    - Basic Usage: getting-started/basic-usage.md
+  - User Guide:
+    - PMF Basics: user-guide/pmf-basics.md
+    - Data Preparation: user-guide/data-preparation.md
+    - Running Analysis: user-guide/running-analysis.md
+    - Interpreting Results: user-guide/interpreting-results.md
+    - Visualization: user-guide/visualization.md
+  - Examples:
+    - Example Datasets: examples/datasets.md
+    - Baltimore Analysis: examples/baltimore.md
+    - Batch Processing: examples/batch-processing.md
+    - Custom Workflows: examples/custom-workflows.md
+  - API Reference:
+    - PMF Class: api/pmf.md
+    - CLI Module: api/cli.md
+  - Contributing:
+    - Development Setup: contributing/setup.md
+    - Guidelines: contributing/guidelines.md
+    - Testing: contributing/testing.md
+  - Changelog: changelog.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/gerritjandebruin/easy-pmf
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/easy-pmf/
+
+extra_css:
+  - stylesheets/extra.css
+
+copyright: Copyright &copy; 2024 Gerrit Jan de Bruin
