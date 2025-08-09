@@ -8,6 +8,7 @@
 **Easy PMF** is a comprehensive Python package for Positive Matrix Factorization (PMF) analysis, designed specifically for environmental data analysis such as air quality source apportionment. It provides an easy-to-use interface similar to EPA's PMF software with built-in visualization capabilities.
 
 :warning: This project is in the early stages of development and may not yet be suitable for production use.
+
 :warning: A LLM (Large Language Model) is being used to assist with development and documentation; much of the content was vibe coded without much oversight.
 
 ## ✨ Features
