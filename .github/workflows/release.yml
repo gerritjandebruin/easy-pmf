@@ -49,14 +49,14 @@ jobs:
       run: |
         NEW_VERSION="${{ github.event.inputs.version }}"
         CURRENT_VERSION="${{ steps.get_current_version.outputs.version }}"
-        
+
         # Basic version format validation
         if ! [[ "$NEW_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([a-z][0-9]+)?$ ]]; then
           echo "❌ Invalid version format: $NEW_VERSION"
           echo "Expected format: X.Y.Z or X.Y.ZaN (e.g., 1.2.3 or 1.2.3a1)"
           exit 1
         fi
-        
+
         # Check if version is newer than current
         pip install packaging
         python -c "
@@ -68,7 +68,7 @@ jobs:
             exit(1)
         print('✅ Version validation passed')
         "
-        
+
         echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
 
     - name: Check if tag already exists
@@ -119,27 +119,27 @@ jobs:
     - name: Update version in pyproject.toml
       run: |
         NEW_VERSION="${{ needs.validate.outputs.new_version }}"
-        
+
         # Update version using Python
         python -c "
         import tomllib
         import re
-        
+
         # Read current file
         with open('pyproject.toml', 'r') as f:
             content = f.read()
-        
+
         # Update version line
         new_content = re.sub(
             r'version = \"[^\"]+\"',
             f'version = \"$NEW_VERSION\"',
             content
         )
-        
+
         # Write back
         with open('pyproject.toml', 'w') as f:
             f.write(new_content)
-        
+
         print(f'✅ Updated version to $NEW_VERSION')
         "
 
@@ -147,7 +147,7 @@ jobs:
       run: |
         NEW_VERSION="${{ needs.validate.outputs.new_version }}"
         DATE=$(date +%Y-%m-%d)
-        
+
         # Create changelog entry if CHANGELOG.md exists
         if [ -f CHANGELOG.md ]; then
           # Create temporary file with new entry
@@ -161,13 +161,13 @@ jobs:
           echo "" >> CHANGELOG_NEW.md
           echo "### Fixed" >> CHANGELOG_NEW.md
           echo "" >> CHANGELOG_NEW.md
-          
+
           # Append existing changelog (skip first line if it's "# Changelog")
           tail -n +2 CHANGELOG.md | grep -v "^# Changelog" >> CHANGELOG_NEW.md || true
-          
+
           # Replace original
           mv CHANGELOG_NEW.md CHANGELOG.md
-          
+
           echo "✅ Updated CHANGELOG.md with version $NEW_VERSION"
         else
           echo "⚠️  CHANGELOG.md not found, skipping changelog update"
@@ -176,15 +176,15 @@ jobs:
     - name: Commit version update
       run: |
         NEW_VERSION="${{ needs.validate.outputs.new_version }}"
-        
+
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
-        
+
         git add pyproject.toml CHANGELOG.md
         git commit -m "🔖 Bump version to $NEW_VERSION
 
         Prepare for release v$NEW_VERSION
-        
+
         - Updated version in pyproject.toml
         - Updated CHANGELOG.md with release template"
 
@@ -196,19 +196,19 @@ jobs:
         title: "🔖 Release v${{ needs.validate.outputs.new_version }}"
         body: |
           # Release v${{ needs.validate.outputs.new_version }}
-          
+
           This PR prepares the release of version ${{ needs.validate.outputs.new_version }}.
-          
+
           ## Changes
           - ⬆️ Bumped version to ${{ needs.validate.outputs.new_version }}
           - 📝 Updated CHANGELOG.md with release template
-          
+
           ## Pre-release Checklist
           - [ ] Review and update CHANGELOG.md entries
           - [ ] Verify all tests pass
           - [ ] Check documentation is up to date
           - [ ] Confirm breaking changes are documented
-          
+
           ## Release Process
           1. Review and merge this PR
           2. The release workflow will automatically:
@@ -216,7 +216,7 @@ jobs:
              - Build and publish to PyPI
              - Deploy documentation
              - Create GitHub release with notes
-          
+
           **Type**: ${{ github.event.inputs.prerelease == 'true' && 'Pre-release' || 'Stable release' }}
         branch: release/v${{ needs.validate.outputs.new_version }}
         delete-branch: true
@@ -238,38 +238,38 @@ jobs:
       with:
         script: |
           const prNumber = ${{ needs.update-version.outputs.pr_number }};
-          
+
           if (!prNumber) {
             console.log('No PR was created, skipping wait');
             return;
           }
-          
+
           console.log(`Waiting for PR #${prNumber} to be merged...`);
-          
+
           // Wait up to 24 hours for the PR to be merged
           const maxWaitTime = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
           const startTime = Date.now();
-          
+
           while (Date.now() - startTime < maxWaitTime) {
             const { data: pr } = await github.rest.pulls.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
               pull_number: prNumber
             });
-            
+
             if (pr.merged) {
               console.log(`✅ PR #${prNumber} has been merged!`);
               return;
             }
-            
+
             if (pr.state === 'closed' && !pr.merged) {
               throw new Error(`❌ PR #${prNumber} was closed without merging`);
             }
-            
+
             console.log(`PR #${prNumber} is still open, waiting...`);
             await new Promise(resolve => setTimeout(resolve, 60000)); // Wait 1 minute
           }
-          
+
           throw new Error(`⏰ Timeout: PR #${prNumber} was not merged within 24 hours`);
 
   # =====================================================
@@ -290,25 +290,25 @@ jobs:
     - name: Create Git tag
       run: |
         NEW_VERSION="${{ needs.validate.outputs.new_version }}"
-        
+
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
-        
+
         git tag -a "v$NEW_VERSION" -m "Release v$NEW_VERSION"
         git push origin "v$NEW_VERSION"
-        
+
         echo "✅ Created and pushed tag v$NEW_VERSION"
 
     - name: Generate release notes
       id: release_notes
       run: |
         NEW_VERSION="${{ needs.validate.outputs.new_version }}"
-        
+
         # Extract changelog section for this version
         if [ -f CHANGELOG.md ]; then
           # Get content between this version and next version header
           awk "/## \[$NEW_VERSION\]/,/## \[.*\]/" CHANGELOG.md | head -n -1 > release_notes.md
-          
+
           # If no specific notes found, create generic ones
           if [ ! -s release_notes.md ]; then
             echo "Release notes for version $NEW_VERSION" > release_notes.md
@@ -320,7 +320,7 @@ jobs:
           echo "" >> release_notes.md
           echo "See commit history for changes in this release." >> release_notes.md
         fi
-        
+
         echo "Generated release notes:"
         cat release_notes.md
 
@@ -345,7 +345,7 @@ jobs:
             workflow_id: 'publish.yml',
             ref: 'v${{ needs.validate.outputs.new_version }}'
           });
-          
+
           console.log('✅ Triggered publish workflow');
 
   # =====================================================
@@ -366,35 +366,35 @@ jobs:
         script: |
           const version = "${{ needs.validate.outputs.new_version }}";
           const isPrerelease = "${{ github.event.inputs.prerelease }}" === "true";
-          
+
           const title = `📋 Post-release tasks for v${version}`;
           const body = `# Post-release tasks for v${version}
-          
+
           This issue tracks follow-up tasks after releasing version ${version}.
-          
+
           ## Immediate Tasks
           - [ ] Verify PyPI publication: https://pypi.org/project/easy-pmf/${version}/
           - [ ] Check documentation deployment
           - [ ] Test installation: \`pip install easy-pmf==${version}\`
           - [ ] Verify GitHub release assets
-          
+
           ## Follow-up Tasks
           - [ ] Update any dependent projects
           - [ ] Update package managers (conda-forge, etc.)
           - [ ] Announce release (if stable)
           - [ ] Social media announcement (if major release)
-          
+
           ${isPrerelease ? '## Pre-release Notes\n\nThis is a pre-release. Monitor for issues before stable release.\n' : ''}
-          
+
           ## Monitoring
           - [ ] Monitor for bug reports
           - [ ] Check download statistics
           - [ ] Review user feedback
-          
+
           ---
-          
+
           Auto-generated after release v${version}`;
-          
+
           await github.rest.issues.create({
             owner: context.repo.owner,
             repo: context.repo.repo,
@@ -403,7 +403,7 @@ jobs:
             labels: ['release', 'post-release-tasks'],
             assignees: ['gerritjandebruin']
           });
-          
+
           console.log(`✅ Created post-release issue for v${version}`);
 
     - name: Send notification

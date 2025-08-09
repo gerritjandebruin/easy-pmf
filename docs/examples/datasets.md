@@ -33,9 +33,9 @@ import pandas as pd
 from easy_pmf import PMF
 
 # Load Baltimore data
-concentrations = pd.read_csv('data/Dataset-Baltimore_con.txt', 
+concentrations = pd.read_csv('data/Dataset-Baltimore_con.txt',
                            sep='\t', index_col=0, parse_dates=True)
-uncertainties = pd.read_csv('data/Dataset-Baltimore_unc.txt', 
+uncertainties = pd.read_csv('data/Dataset-Baltimore_unc.txt',
                           sep='\t', index_col=0, parse_dates=True)
 
 print(f"Baltimore dataset shape: {concentrations.shape}")
@@ -115,7 +115,7 @@ St. Louis dataset represents a urban Midwest environment with a moderate number 
 
 ### Characteristics
 - **Location**: St. Louis, Missouri
-- **Samples**: 418 measurements  
+- **Samples**: 418 measurements
 - **Species**: 13 chemical components
 - **Sources**: Urban mix with midwest characteristics
 
@@ -207,7 +207,7 @@ concentrations = pd.DataFrame({
 uncertainties = pd.DataFrame({
     'Species1': [1.2, 0.8, ...],
     'Species2': [0.1, 0.2, ...],
-    # ... more species  
+    # ... more species
 }, index=concentrations.index)  # Same index
 ```
 
@@ -221,23 +221,23 @@ import pandas as pd
 # Example: Convert your data to Easy PMF format
 def convert_to_pmf_format(your_data_file, output_prefix):
     """Convert your data to Easy PMF format."""
-    
+
     # Load your data (adapt as needed)
     data = pd.read_csv(your_data_file)
-    
+
     # Extract concentrations (adapt column selection)
     concentrations = data[['PM25', 'SO4', 'NO3', 'EC', 'OC', ...]].copy()
-    
+
     # Set datetime index if needed
     concentrations.index = pd.to_datetime(data['Date'])
-    
+
     # Estimate uncertainties (adapt as needed)
     uncertainties = concentrations * 0.15  # 15% uncertainty
-    
+
     # Save in PMF format
     concentrations.to_csv(f'{output_prefix}_con.csv')
     uncertainties.to_csv(f'{output_prefix}_unc.csv')
-    
+
     return concentrations, uncertainties
 
 # Use the converter
@@ -263,7 +263,7 @@ Before running PMF on your data:
 ```python
 def compare_datasets():
     """Compare PMF results across all three datasets."""
-    
+
     datasets = {
         'Baltimore': {
             'conc': 'data/Dataset-Baltimore_con.txt',
@@ -271,37 +271,37 @@ def compare_datasets():
             'sep': '\t'
         },
         'BatonRouge': {
-            'conc': 'data/Dataset-BatonRouge-con.csv', 
+            'conc': 'data/Dataset-BatonRouge-con.csv',
             'unc': 'data/Dataset-BatonRouge-unc.csv',
             'sep': ','
         },
         'StLouis': {
             'conc': 'data/Dataset-StLouis-con.csv',
-            'unc': 'data/Dataset-StLouis-unc.csv', 
+            'unc': 'data/Dataset-StLouis-unc.csv',
             'sep': ','
         }
     }
-    
+
     results = {}
-    
+
     for site, files in datasets.items():
         print(f"\nAnalyzing {site}...")
-        
+
         # Load data
         conc = pd.read_csv(files['conc'], sep=files['sep'], index_col=0)
         unc = pd.read_csv(files['unc'], sep=files['sep'], index_col=0)
-        
+
         # Determine optimal factor number
         n_factors = {
             'Baltimore': 7,
-            'BatonRouge': 6, 
+            'BatonRouge': 6,
             'StLouis': 5
         }[site]
-        
+
         # Run PMF
         pmf = PMF(n_components=n_factors, random_state=42)
         pmf.fit(conc, unc)
-        
+
         # Store results
         results[site] = {
             'pmf': pmf,
@@ -310,13 +310,13 @@ def compare_datasets():
             'n_species': len(conc.columns),
             'n_factors': n_factors
         }
-        
+
         print(f"  Samples: {results[site]['n_samples']}")
         print(f"  Species: {results[site]['n_species']}")
         print(f"  Factors: {results[site]['n_factors']}")
         print(f"  Q-value: {results[site]['q_value']:.2f}")
         print(f"  Converged: {pmf.converged_}")
-    
+
     return results
 
 # Run comparison

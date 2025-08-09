@@ -98,7 +98,7 @@ table tr:nth-child(even) {
   table {
     font-size: 0.9em;
   }
-  
+
   table th, table td {
     padding: 6px 8px;
   }

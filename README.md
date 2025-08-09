@@ -75,7 +75,7 @@ python quick_analysis.py
 The package comes with three real-world datasets:
 
 - **Baton Rouge**: Air quality data (307 samples × 41 species)
-- **St. Louis**: Environmental monitoring data (418 samples × 13 species)  
+- **St. Louis**: Environmental monitoring data (418 samples × 13 species)
 - **Baltimore**: PM2.5 composition data (657 samples × 26 species)
 
 ## 🎯 Use Cases
@@ -175,20 +175,20 @@ datasets = {
 results = {}
 for site, files in datasets.items():
     print(f"Analyzing {site}...")
-    
+
     conc = pd.read_csv(files["conc"], index_col=0)
     unc = pd.read_csv(files["unc"], index_col=0)
-    
+
     pmf = PMF(n_components=5, random_state=42)
     pmf.fit(conc, unc)
-    
+
     results[site] = {
         "contributions": pmf.contributions_,
         "profiles": pmf.profiles_,
         "q_value": pmf.score(conc, unc),
         "converged": pmf.converged_
     }
-    
+
     print(f"  Q-value: {results[site]['q_value']:.2f}")
     print(f"  Converged: {results[site]['converged']}")
 ```

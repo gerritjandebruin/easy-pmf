@@ -69,14 +69,14 @@ analysis_config = {
 ```python
 def analyze_dataset(dataset_name, dataset_config, analysis_config):
     """Analyze a single dataset with standard parameters."""
-    
+
     print(f"\\n{'='*50}")
     print(f"Analyzing {dataset_name} dataset")
     print(f"{'='*50}")
-    
+
     # Initialize PMF
     pmf = PMF()
-    
+
     # Load data
     try:
         pmf.load_data(
@@ -87,7 +87,7 @@ def analyze_dataset(dataset_name, dataset_config, analysis_config):
     except Exception as e:
         print(f"✗ Error loading data: {e}")
         return None
-    
+
     # Data preparation
     pmf.prepare_data(
         remove_missing_threshold=analysis_config['remove_missing_threshold'],
@@ -95,37 +95,37 @@ def analyze_dataset(dataset_name, dataset_config, analysis_config):
         apply_uncertainty_scaling=analysis_config['apply_uncertainty_scaling']
     )
     print(f"✓ Data prepared: {pmf.prepared_data.shape}")
-    
+
     # Test multiple factor numbers
     results = {}
     q_qexp_values = {}
-    
+
     for n_factors in analysis_config['factor_range']:
         print(f"  Running {n_factors} factors...", end='')
-        
+
         try:
             result = pmf.run_pmf(
                 n_factors=n_factors,
                 n_runs=analysis_config['n_runs'],
                 random_seed=analysis_config['random_seed']
             )
-            
+
             results[n_factors] = result
             q_qexp_values[n_factors] = result.q_qexp
             print(f" Q/Qexp: {result.q_qexp:.2f}")
-            
+
         except Exception as e:
             print(f" ✗ Error: {e}")
             continue
-    
+
     # Select optimal number of factors
     if q_qexp_values:
         # Find factor number where Q/Qexp is closest to 1
-        optimal_factors = min(q_qexp_values.keys(), 
+        optimal_factors = min(q_qexp_values.keys(),
                             key=lambda x: abs(q_qexp_values[x] - 1.0))
-        
+
         print(f"✓ Optimal factors: {optimal_factors} (Q/Qexp: {q_qexp_values[optimal_factors]:.2f})")
-        
+
         return {
             'pmf': pmf,
             'results': results,
@@ -133,26 +133,26 @@ def analyze_dataset(dataset_name, dataset_config, analysis_config):
             'optimal_factors': optimal_factors,
             'q_qexp_values': q_qexp_values
         }
-    
+
     return None
 
 def run_batch_analysis(datasets, analysis_config):
     """Run PMF analysis on multiple datasets."""
-    
+
     batch_results = {}
-    
+
     for dataset_name, dataset_config in datasets.items():
         result = analyze_dataset(dataset_name, dataset_config, analysis_config)
         if result:
             batch_results[dataset_name] = result
-            
+
             # Generate plots for this dataset
             result['pmf'].create_all_plots(
                 result=result['optimal_result'],
                 dataset_name=dataset_name,
                 output_dir="output"
             )
-    
+
     return batch_results
 ```
 
@@ -174,10 +174,10 @@ print(f"Successfully analyzed {len(batch_results)} datasets")
 ```python
 def compare_results(batch_results):
     """Compare results across datasets."""
-    
+
     print("\\nCOMPARATIVE ANALYSIS")
     print("-" * 30)
-    
+
     # Summary table
     summary_data = []
     for dataset_name, result in batch_results.items():
@@ -188,20 +188,20 @@ def compare_results(batch_results):
             'Species Count': result['pmf'].concentration_data.shape[1],
             'Sample Count': result['pmf'].concentration_data.shape[0]
         })
-    
+
     summary_df = pd.DataFrame(summary_data)
     print(summary_df.to_string(index=False))
-    
+
     # Factor number distribution
     factor_counts = {}
     for result in batch_results.values():
         n_factors = result['optimal_factors']
         factor_counts[n_factors] = factor_counts.get(n_factors, 0) + 1
-    
+
     print(f"\\nFactor number distribution:")
     for n_factors, count in sorted(factor_counts.items()):
         print(f"  {n_factors} factors: {count} dataset(s)")
-    
+
     return summary_df
 
 # Run comparative analysis
@@ -213,47 +213,47 @@ summary_df = compare_results(batch_results)
 ```python
 def create_comparison_plots(batch_results):
     """Create plots comparing results across datasets."""
-    
+
     # Q/Qexp comparison
     fig, axes = plt.subplots(2, 2, figsize=(15, 12))
-    
+
     # Plot 1: Q/Qexp by factor number
     ax1 = axes[0, 0]
     for dataset_name, result in batch_results.items():
         factors = list(result['q_qexp_values'].keys())
         q_values = list(result['q_qexp_values'].values())
         ax1.plot(factors, q_values, 'o-', label=dataset_name)
-    
+
     ax1.axhline(y=1.0, color='red', linestyle='--', alpha=0.5)
     ax1.set_xlabel('Number of Factors')
     ax1.set_ylabel('Q/Qexp')
     ax1.set_title('Model Fit Comparison')
     ax1.legend()
     ax1.grid(True, alpha=0.3)
-    
+
     # Plot 2: Dataset characteristics
     ax2 = axes[0, 1]
     dataset_names = []
     species_counts = []
     sample_counts = []
-    
+
     for dataset_name, result in batch_results.items():
         dataset_names.append(dataset_name)
         species_counts.append(result['pmf'].concentration_data.shape[1])
         sample_counts.append(result['pmf'].concentration_data.shape[0])
-    
+
     x_pos = range(len(dataset_names))
     ax2.bar([x - 0.2 for x in x_pos], species_counts, 0.4, label='Species', alpha=0.7)
-    ax2.bar([x + 0.2 for x in x_pos], [s/10 for s in sample_counts], 0.4, 
+    ax2.bar([x + 0.2 for x in x_pos], [s/10 for s in sample_counts], 0.4,
             label='Samples (÷10)', alpha=0.7)
-    
+
     ax2.set_xlabel('Dataset')
     ax2.set_ylabel('Count')
     ax2.set_title('Dataset Characteristics')
     ax2.set_xticks(x_pos)
     ax2.set_xticklabels(dataset_names)
     ax2.legend()
-    
+
     # Plot 3: Optimal factor numbers
     ax3 = axes[1, 0]
     optimal_factors = [result['optimal_factors'] for result in batch_results.values()]
@@ -261,7 +261,7 @@ def create_comparison_plots(batch_results):
     ax3.set_xlabel('Dataset')
     ax3.set_ylabel('Optimal Number of Factors')
     ax3.set_title('Optimal Factor Numbers')
-    
+
     # Plot 4: Final Q/Qexp values
     ax4 = axes[1, 1]
     final_q_qexp = [result['optimal_result'].q_qexp for result in batch_results.values()]
@@ -270,7 +270,7 @@ def create_comparison_plots(batch_results):
     ax4.set_xlabel('Dataset')
     ax4.set_ylabel('Q/Qexp')
     ax4.set_title('Final Model Fit Quality')
-    
+
     plt.tight_layout()
     plt.savefig('output/batch_analysis_comparison.png', dpi=300, bbox_inches='tight')
     plt.show()
@@ -284,21 +284,21 @@ create_comparison_plots(batch_results)
 ```python
 def generate_batch_report(batch_results, output_file="output/batch_analysis_report.txt"):
     """Generate a comprehensive text report."""
-    
+
     with open(output_file, 'w') as f:
         f.write("EASY PMF BATCH ANALYSIS REPORT\\n")
         f.write("=" * 50 + "\\n\\n")
-        
+
         f.write(f"Analysis Date: {pd.Timestamp.now().strftime('%Y-%m-%d %H:%M:%S')}\\n")
         f.write(f"Datasets Analyzed: {len(batch_results)}\\n\\n")
-        
+
         # Configuration summary
         f.write("ANALYSIS CONFIGURATION\\n")
         f.write("-" * 25 + "\\n")
         for key, value in analysis_config.items():
             f.write(f"{key}: {value}\\n")
         f.write("\\n")
-        
+
         # Dataset summaries
         for dataset_name, result in batch_results.items():
             f.write(f"DATASET: {dataset_name.upper()}\\n")
@@ -306,12 +306,12 @@ def generate_batch_report(batch_results, output_file="output/batch_analysis_repo
             f.write(f"Data shape: {result['pmf'].concentration_data.shape}\\n")
             f.write(f"Optimal factors: {result['optimal_factors']}\\n")
             f.write(f"Final Q/Qexp: {result['optimal_result'].q_qexp:.3f}\\n")
-            
+
             f.write("\\nQ/Qexp by factor number:\\n")
             for n_factors, q_qexp in result['q_qexp_values'].items():
                 f.write(f"  {n_factors} factors: {q_qexp:.3f}\\n")
             f.write("\\n")
-    
+
     print(f"Report saved to: {output_file}")
 
 # Generate report

@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-from pmf import PMF
+from easy_pmf import PMF
 
 # Create output directory if it doesn't exist
 output_dir = Path("output")
@@ -103,6 +103,11 @@ pmf = PMF(n_components=7, random_state=42)
 pmf.fit(concentrations, uncertainties)
 
 # Save the results
+# Check if model fitted successfully
+if pmf.contributions_ is None or pmf.profiles_ is None:
+    print("❌ PMF fitting failed!")
+    exit(1)
+
 # The contributions tell you how much each factor contributes
 # to each sample (time point)
 contributions = pd.DataFrame(
@@ -211,7 +216,7 @@ for i, factor in enumerate(profiles.index):
         bars = ax.bar(
             range(len(top_species)),
             top_species.values,
-            color=plt.cm.viridis(i / len(profiles.index)),
+            color=plt.colormaps["viridis"](i / len(profiles.index)),
         )
         ax.set_title(f"{factor} - Top Species", fontweight="bold")
         ax.set_xticks(range(len(top_species)))
@@ -407,7 +412,7 @@ n_factors = len(profiles.index)
 x_pos = np.arange(n_species)
 width = 0.8 / n_factors  # Width of each bar
 
-colors = plt.cm.Set3(np.linspace(0, 1, n_factors))
+colors = plt.colormaps["Set3"](np.linspace(0, 1, n_factors))
 
 for i, (factor_name, factor_data) in enumerate(profiles.iterrows()):
     offset = (i - n_factors / 2 + 0.5) * width
@@ -445,7 +450,7 @@ dates = contributions.index
 if isinstance(dates[0], str):
     dates = pd.to_datetime(dates)
 
-colors = plt.cm.Set3(np.linspace(0, 1, len(contributions.columns)))
+colors = plt.colormaps["Set3"](np.linspace(0, 1, len(contributions.columns)))
 
 for i, factor_name in enumerate(contributions.columns):
     ax.plot(

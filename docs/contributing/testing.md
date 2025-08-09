@@ -7,7 +7,7 @@ This guide covers testing procedures for Easy PMF, including how to run tests, w
 Easy PMF uses a comprehensive testing strategy to ensure reliability:
 
 - **Unit tests**: Test individual functions and methods
-- **Integration tests**: Test component interactions  
+- **Integration tests**: Test component interactions
 - **End-to-end tests**: Test complete analysis workflows
 - **Documentation tests**: Ensure examples work correctly
 - **Performance tests**: Monitor algorithm performance
@@ -98,7 +98,7 @@ uv run pytest -n 4
 # Run only unit tests
 uv run pytest tests/unit/
 
-# Run only integration tests  
+# Run only integration tests
 uv run pytest tests/integration/
 
 # Run quick tests (skip slow ones)
@@ -121,10 +121,10 @@ def test_pmf_run_with_valid_data():
     pmf = PMF()
     pmf.concentration_data = create_test_concentration_data()
     pmf.uncertainty_data = create_test_uncertainty_data()
-    
+
     # Act: Perform the operation being tested
     result = pmf.run_pmf(n_factors=3, n_runs=5)
-    
+
     # Assert: Check the results
     assert isinstance(result, PMFResult)
     assert result.factor_profiles.shape == (pmf.n_species, 3)
@@ -202,7 +202,7 @@ def test_data_loading_formats(tmp_path, file_format, separator):
     data = create_test_data()
     file_path = tmp_path / f"test_data.{file_format}"
     data.to_csv(file_path, sep=separator)
-    
+
     # Test loading
     pmf = PMF()
     pmf.load_data(str(file_path))
@@ -217,7 +217,7 @@ Test error conditions:
 def test_pmf_run_without_data():
     """Test that PMF raises error when run without data."""
     pmf = PMF()
-    
+
     with pytest.raises(ValueError, match="No data loaded"):
         pmf.run_pmf(n_factors=3)
 
@@ -226,7 +226,7 @@ def test_invalid_factor_number(pmf_with_data):
     # Too few factors
     with pytest.raises(ValueError, match="n_factors must be at least 2"):
         pmf_with_data.run_pmf(n_factors=1)
-    
+
     # Too many factors
     n_species = pmf_with_data.concentration_data.shape[1]
     with pytest.raises(ValueError, match="n_factors cannot exceed"):
@@ -235,7 +235,7 @@ def test_invalid_factor_number(pmf_with_data):
 def test_file_not_found():
     """Test handling of missing data files."""
     pmf = PMF()
-    
+
     with pytest.raises(FileNotFoundError):
         pmf.load_data("nonexistent_file.csv")
 ```
@@ -250,10 +250,10 @@ from unittest.mock import patch, MagicMock
 def test_data_loading_with_network_failure():
     """Test graceful handling of network failures."""
     pmf = PMF()
-    
+
     with patch('pandas.read_csv') as mock_read_csv:
         mock_read_csv.side_effect = ConnectionError("Network unavailable")
-        
+
         with pytest.raises(ConnectionError):
             pmf.load_data("http://example.com/data.csv")
 
@@ -262,7 +262,7 @@ def test_plot_generation(mock_savefig, pmf_with_data):
     """Test that plots are generated without actually saving files."""
     result = pmf_with_data.run_pmf(n_factors=3)
     pmf_with_data.create_plots(result, output_dir="test_output")
-    
+
     # Verify savefig was called
     assert mock_savefig.called
     assert mock_savefig.call_count > 0
@@ -332,7 +332,7 @@ def test_optional_dependency():
         import seaborn
     except ImportError:
         pytest.skip("seaborn not available")
-    
+
     # Test code using seaborn
     pass
 ```
@@ -349,37 +349,37 @@ import pytest
 
 class TestPerformance:
     """Performance benchmark tests."""
-    
+
     def test_pmf_performance_small_dataset(self, benchmark, small_dataset):
         """Benchmark PMF performance on small dataset."""
         pmf = PMF()
         pmf.concentration_data = small_dataset
         pmf.prepare_data()
-        
+
         # Benchmark the PMF run
         result = benchmark(pmf.run_pmf, n_factors=3, n_runs=5)
         assert result.q_qexp > 0
-    
+
     @pytest.mark.slow
     def test_pmf_performance_large_dataset(self, benchmark, large_dataset):
         """Benchmark PMF performance on large dataset."""
         pmf = PMF()
         pmf.concentration_data = large_dataset
         pmf.prepare_data()
-        
+
         result = benchmark(pmf.run_pmf, n_factors=5, n_runs=10)
         assert result.q_qexp > 0
-    
+
     def test_memory_usage(self, memory_profiler, sample_data):
         """Test memory usage during PMF analysis."""
         pmf = PMF()
         pmf.concentration_data = sample_data
         pmf.prepare_data()
-        
+
         # Monitor memory during execution
         with memory_profiler:
             result = pmf.run_pmf(n_factors=3)
-        
+
         # Assert memory usage is reasonable
         assert memory_profiler.max_memory < 1000  # MB
 ```
@@ -399,16 +399,16 @@ def test_scalability(n_samples, n_species):
     # Generate synthetic data
     data = generate_synthetic_data(n_samples, n_species)
     uncertainties = data * 0.1
-    
+
     pmf = PMF()
     pmf.concentration_data = data
     pmf.uncertainty_data = uncertainties
     pmf.prepare_data()
-    
+
     start_time = time.time()
     result = pmf.run_pmf(n_factors=min(5, n_species-1))
     execution_time = time.time() - start_time
-    
+
     # Performance assertions
     assert result.q_qexp > 0
     assert execution_time < 60  # Should complete within 1 minute
@@ -432,24 +432,24 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: [3.8, 3.9, 3.10, 3.11]
-    
+
     steps:
     - uses: actions/checkout@v3
-    
+
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
-    
+
     - name: Install uv
       run: pip install uv
-    
+
     - name: Install dependencies
       run: uv sync --all-extras
-    
+
     - name: Run tests
       run: uv run pytest --cov=easy_pmf --cov-report=xml
-    
+
     - name: Upload coverage
       uses: codecov/codecov-action@v3
       with:
@@ -503,10 +503,10 @@ def baltimore_test_data(test_data_path):
     """Load Baltimore test dataset."""
     conc_file = test_data_path / "baltimore_concentrations_small.csv"
     unc_file = test_data_path / "baltimore_uncertainties_small.csv"
-    
+
     if not conc_file.exists():
         pytest.skip("Baltimore test data not available")
-    
+
     return {
         'concentrations': pd.read_csv(conc_file, index_col=0),
         'uncertainties': pd.read_csv(unc_file, index_col=0)
@@ -520,44 +520,44 @@ Create reproducible synthetic data:
 ```python
 def generate_synthetic_pmf_data(
     n_samples: int = 100,
-    n_species: int = 10, 
+    n_species: int = 10,
     n_factors: int = 3,
     noise_level: float = 0.1,
     random_seed: int = 42
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Generate synthetic PMF data for testing."""
-    
+
     np.random.seed(random_seed)
-    
+
     # Create factor profiles
     profiles = np.random.exponential(scale=1.0, size=(n_species, n_factors))
-    
+
     # Create factor contributions
     contributions = np.random.exponential(scale=10.0, size=(n_samples, n_factors))
-    
+
     # Generate concentrations
     concentrations = contributions @ profiles.T
-    
+
     # Add noise
-    noise = np.random.normal(0, noise_level * concentrations.mean(), 
+    noise = np.random.normal(0, noise_level * concentrations.mean(),
                            size=concentrations.shape)
     concentrations += noise
     concentrations = np.maximum(concentrations, 0)  # Non-negative
-    
+
     # Create uncertainties (10% + Poisson)
     uncertainties = np.sqrt(concentrations * 0.01**2 + concentrations)
-    
+
     # Convert to DataFrames
     species_names = [f'Species_{i}' for i in range(n_species)]
     sample_names = [f'Sample_{i}' for i in range(n_samples)]
-    
-    conc_df = pd.DataFrame(concentrations, 
-                          index=sample_names, 
+
+    conc_df = pd.DataFrame(concentrations,
+                          index=sample_names,
                           columns=species_names)
     unc_df = pd.DataFrame(uncertainties,
                          index=sample_names,
                          columns=species_names)
-    
+
     return conc_df, unc_df
 ```
 

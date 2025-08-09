@@ -63,17 +63,17 @@ jobs:
       run: |
         TAG_VERSION="${{ github.event.release.tag_name }}"
         PACKAGE_VERSION="${{ steps.get_version.outputs.version }}"
-        
+
         # Remove 'v' prefix from tag if present
         TAG_VERSION=${TAG_VERSION#v}
-        
+
         if [[ "$TAG_VERSION" != "$PACKAGE_VERSION" ]]; then
           echo "❌ Version mismatch!"
           echo "  Tag version: $TAG_VERSION"
           echo "  Package version: $PACKAGE_VERSION"
           exit 1
         fi
-        
+
         echo "✅ Version validation passed: $PACKAGE_VERSION"
 
     - name: Run full test suite
@@ -139,7 +139,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [validate, build]
     if: >
-      github.event_name == 'workflow_dispatch' && 
+      github.event_name == 'workflow_dispatch' &&
       github.event.inputs.publish_to_testpypi == 'true'
     environment:
       name: test-pypi
@@ -174,7 +174,7 @@ jobs:
     needs: [validate, build]
     if: >
       github.event_name == 'release' ||
-      (github.event_name == 'workflow_dispatch' && 
+      (github.event_name == 'workflow_dispatch' &&
        github.event.inputs.publish_to_testpypi == 'false')
     environment:
       name: release
@@ -199,31 +199,31 @@ jobs:
         script: |
           const version = "${{ needs.validate.outputs.version }}";
           const isPrerelease = "${{ needs.validate.outputs.is_prerelease }}" === "true";
-          
+
           const emoji = isPrerelease ? "🚀" : "🎉";
           const releaseType = isPrerelease ? "pre-release" : "stable release";
-          
+
           const body = `${emoji} **Successfully published ${releaseType} v${version} to PyPI!**
-          
+
           📦 **Package**: https://pypi.org/project/easy-pmf/
           📋 **Version**: ${version}
           📅 **Published**: ${new Date().toISOString().split('T')[0]}
-          
+
           ## Installation
           \`\`\`bash
           pip install easy-pmf==${version}
           # or upgrade existing installation
           pip install --upgrade easy-pmf
           \`\`\`
-          
+
           ## What's included
           - 🐍 Python 3.9+ support
           - 📊 PMF analysis capabilities
           - 📖 Comprehensive documentation
           - 🧪 Full test suite
-          
+
           Thank you for using Easy PMF! 🌟`;
-          
+
           github.rest.issues.createComment({
             issue_number: context.payload.release.number,
             owner: context.repo.owner,
@@ -255,7 +255,7 @@ jobs:
         python -c "
         import easy_pmf
         print('✅ Package imports successfully')
-        
+
         # Test basic functionality if possible
         try:
             from easy_pmf import PMF

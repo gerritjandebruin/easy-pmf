@@ -175,22 +175,22 @@ Use Google-style docstrings:
 ```python
 def run_pmf(self, n_factors: int, n_runs: int = 20) -> PMFResult:
     """Run PMF analysis with specified parameters.
-    
+
     This method performs Positive Matrix Factorization on the prepared
     dataset using the specified number of factors.
-    
+
     Args:
         n_factors: Number of factors to extract (typically 3-10)
         n_runs: Number of independent runs for stability (default: 20)
-        
+
     Returns:
         PMFResult object containing factor profiles, contributions,
         and model fit statistics.
-        
+
     Raises:
         ValueError: If n_factors is less than 2 or greater than number of species
         DataError: If data has not been prepared before running PMF
-        
+
     Example:
         >>> pmf = PMF()
         >>> pmf.load_data("concentrations.csv", "uncertainties.csv")
@@ -247,10 +247,10 @@ def test_pmf_run_with_valid_data():
     pmf = PMF()
     pmf.load_test_data()
     pmf.prepare_data()
-    
+
     # Act
     result = pmf.run_pmf(n_factors=3)
-    
+
     # Assert
     assert result.q_qexp > 0
     assert result.factor_profiles.shape == (pmf.n_species, 3)
@@ -308,7 +308,7 @@ import pandas as pd
 import numpy as np
 
 def process_data(
-    data: pd.DataFrame, 
+    data: pd.DataFrame,
     species_list: Optional[List[str]] = None
 ) -> Tuple[pd.DataFrame, np.ndarray]:
     """Process input data and return processed results."""
@@ -325,7 +325,7 @@ def load_data(self, filepath: str) -> None:
         raise FileNotFoundError(f"Data file not found: {filepath}")
     except pd.errors.EmptyDataError:
         raise ValueError(f"Data file is empty: {filepath}")
-    
+
     if data.empty:
         raise ValueError("Loaded data is empty")
 ```

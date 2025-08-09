@@ -17,9 +17,9 @@ Please delete options that are not relevant:
 
 Please describe the changes made:
 
-- 
-- 
-- 
+-
+-
+-
 
 ## Testing
 

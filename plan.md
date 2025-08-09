@@ -23,7 +23,7 @@ Update pyproject.toml to include documentation and development dependencies:
 [project.optional-dependencies]
 dev = [
     "pytest>=6.0",
-    "pytest-cov>=2.0", 
+    "pytest-cov>=2.0",
     "ruff>=0.1.0",
     "mypy>=0.910",
     "pre-commit>=3.0.0",
@@ -182,7 +182,7 @@ Would you like me to start implementing any of these steps? I recommend beginnin
 
 This plan ensures:
 - ✅ **Professional development workflow**
-- ✅ **Cross-platform compatibility** 
+- ✅ **Cross-platform compatibility**
 - ✅ **Automated testing & deployment**
 - ✅ **High-quality documentation**
 - ✅ **Community-friendly contribution process**

@@ -132,11 +132,11 @@ def test_new_feature():
         'Species1': [1.0, 2.0, 3.0],
         'Species2': [2.0, 4.0, 6.0]
     })
-    
+
     # Test your feature
     pmf = PMF(n_components=2)
     pmf.fit(concentrations)
-    
+
     # Assertions
     assert pmf.converged_
     assert pmf.contributions_.shape == (3, 2)
@@ -170,23 +170,23 @@ Example docstring:
 ```python
 def new_function(data: pd.DataFrame, n_components: int = 5) -> PMF:
     """Short description of the function.
-    
+
     Longer description explaining what the function does,
     its use cases, and any important details.
-    
+
     Args:
         data: Input concentration data with samples as rows and species as columns.
         n_components: Number of PMF factors to extract. Defaults to 5.
-    
+
     Returns:
         Fitted PMF model instance.
-        
+
     Raises:
         ValueError: If data contains negative values.
-        
+
     Examples:
         Basic usage:
-        
+
         >>> import pandas as pd
         >>> from easy_pmf import PMF
         >>> data = pd.DataFrame({'A': [1, 2, 3], 'B': [2, 4, 6]})
@@ -269,16 +269,16 @@ Before implementing:
 
 class PMF:
     # ... existing methods ...
-    
+
     def validate_results(self, threshold: float = 0.1) -> Dict[str, bool]:
         """Validate PMF results using various criteria.
-        
+
         Args:
             threshold: Validation threshold for various checks.
-            
+
         Returns:
             Dictionary with validation results.
-            
+
         Examples:
             >>> pmf = PMF(n_components=5)
             >>> pmf.fit(concentrations, uncertainties)
@@ -288,13 +288,13 @@ class PMF:
         """
         if self.contributions_ is None:
             raise ValueError("Model must be fitted before validation")
-        
+
         validation = {
             'converged': self.converged_,
             'reasonable_contributions': (self.contributions_ >= 0).all().all(),
             'reasonable_profiles': (self.profiles_ >= 0).all().all(),
         }
-        
+
         return validation
 ```
 

@@ -65,15 +65,15 @@ results = {}
 
 for n_factors in factor_range:
     print(f"Running PMF with {n_factors} factors...")
-    
+
     result = pmf.run_pmf(
         n_factors=n_factors,
         n_runs=20,  # Multiple runs for stability
         random_seed=42
     )
-    
+
     results[n_factors] = result
-    
+
     # Print model fit statistics
     print(f"Q/Qexp: {result.q_qexp:.2f}")
     print(f"Q robust: {result.q_robust:.2f}")
@@ -106,7 +106,7 @@ for factor_idx in range(optimal_factors):
     # Sort species by their contribution to this factor
     factor_contributions = factor_profiles.iloc[:, factor_idx].sort_values(ascending=False)
     top_species = factor_contributions.head(5)
-    
+
     for species, contribution in top_species.items():
         print(f"  {species}: {contribution:.2f}")
 
@@ -129,7 +129,7 @@ pmf.create_all_plots(
 
 # The following plots will be generated:
 # - Factor profiles heatmap
-# - Factor contributions heatmap  
+# - Factor contributions heatmap
 # - Individual factor profile plots
 # - Individual factor contribution plots
 # - Top species by factor

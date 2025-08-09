@@ -31,7 +31,7 @@ jobs:
             python-version: "3.9"
           - os: macos-latest
             python-version: "3.10"
-    
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -287,10 +287,10 @@ jobs:
     steps:
     - name: Check CI status
       run: |
-        if [[ "${{ needs.test.result }}" == "success" && 
-              "${{ needs.lint.result }}" == "success" && 
-              "${{ needs.security.result }}" == "success" && 
-              "${{ needs.docs.result }}" == "success" && 
+        if [[ "${{ needs.test.result }}" == "success" &&
+              "${{ needs.lint.result }}" == "success" &&
+              "${{ needs.security.result }}" == "success" &&
+              "${{ needs.docs.result }}" == "success" &&
               "${{ needs.build.result }}" == "success" ]]; then
           echo "✅ All CI checks passed!"
           exit 0

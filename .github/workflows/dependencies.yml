@@ -34,7 +34,7 @@ jobs:
       run: |
         # Update all dependencies
         uv lock --upgrade
-        
+
         # Check if there are any changes
         if git diff --quiet uv.lock; then
           echo "NO_UPDATES=true" >> $GITHUB_ENV
@@ -143,7 +143,7 @@ jobs:
       run: |
         echo "## Security Audit Results" > security_report.md
         echo "" >> security_report.md
-        
+
         # Check safety results
         if [ -f safety-report.json ]; then
           vulnerabilities=$(jq '.vulnerabilities | length' safety-report.json 2>/dev/null || echo "0")
@@ -158,7 +158,7 @@ jobs:
           echo "❌ **Safety Check**: Failed to run" >> security_report.md
         fi
         echo "" >> security_report.md
-        
+
         # Check bandit results
         if [ -f bandit-report.json ]; then
           issues=$(jq '.results | length' bandit-report.json 2>/dev/null || echo "0")
@@ -188,10 +188,10 @@ jobs:
       with:
         script: |
           const fs = require('fs');
-          
+
           let hasVulnerabilities = false;
           let reportContent = "# Security Audit Report\n\n";
-          
+
           // Check safety report
           try {
             const safetyReport = JSON.parse(fs.readFileSync('safety-report.json', 'utf8'));
@@ -207,7 +207,7 @@ jobs:
           } catch (e) {
             console.log('No safety report found or parsing failed');
           }
-          
+
           // Check bandit report
           try {
             const banditReport = JSON.parse(fs.readFileSync('bandit-report.json', 'utf8'));
@@ -226,14 +226,14 @@ jobs:
           } catch (e) {
             console.log('No bandit report found or parsing failed');
           }
-          
+
           if (hasVulnerabilities) {
             reportContent += "## Next Steps\n\n";
             reportContent += "1. Review the security reports in the workflow artifacts\n";
             reportContent += "2. Update vulnerable dependencies\n";
             reportContent += "3. Address any code security issues\n";
             reportContent += "4. Re-run the security audit\n";
-            
+
             // Create issue
             await github.rest.issues.create({
               owner: context.repo.owner,
@@ -269,18 +269,18 @@ jobs:
         echo "" >> dependency_analysis.md
         echo "Generated on: $(date)" >> dependency_analysis.md
         echo "" >> dependency_analysis.md
-        
+
         echo "## Direct Dependencies" >> dependency_analysis.md
         echo "" >> dependency_analysis.md
         echo "| Package | Version | License |" >> dependency_analysis.md
         echo "|---------|---------|---------|" >> dependency_analysis.md
-        
+
         # Install pip-licenses for license checking
         uv run pip install pip-licenses
-        
+
         # Get license information
         uv run pip-licenses --format=markdown >> dependency_analysis.md
-        
+
         echo "" >> dependency_analysis.md
         echo "## Dependency Tree" >> dependency_analysis.md
         echo "" >> dependency_analysis.md

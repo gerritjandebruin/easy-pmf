@@ -30,7 +30,7 @@ pmf/
 The package currently supports three datasets:
 
 1. **BatonRouge**: Air quality data with 41 chemical species and 307 time points
-2. **StLouis**: Environmental data with 13 chemical species and 418 time points  
+2. **StLouis**: Environmental data with 13 chemical species and 418 time points
 3. **Baltimore**: PM2.5 data with 26 chemical species and 657 time points
 
 ## Usage
@@ -158,7 +158,7 @@ After running the analysis, you'll see output like:
 ```
 Successfully analyzed: 3 datasets
   ✓ BatonRouge
-  ✓ StLouis  
+  ✓ StLouis
   ✓ Baltimore
 
 All outputs saved to: C:\Projects\pmf\pmf\output

@@ -63,7 +63,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     if: github.ref == 'refs/heads/main' || github.event_name == 'release'
-    
+
     # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
     permissions:
       pages: write      # to deploy to Pages
@@ -145,7 +145,7 @@ jobs:
         echo "Total markdown files: $(find docs/ -name "*.md" | wc -l)"
         echo "Total lines in docs: $(find docs/ -name "*.md" -exec wc -l {} \; | awk '{sum+=$1} END {print sum}')"
         echo ""
-        
+
         # Check for empty files
         empty_files=$(find docs/ -name "*.md" -size 0)
         if [ -n "$empty_files" ]; then
@@ -202,32 +202,32 @@ jobs:
         script: |
           const prNumber = context.payload.pull_request.number;
           const runId = context.runId;
-          
+
           const body = `📖 **Documentation Preview Built**
-          
+
           The documentation has been built for this PR and is available as an artifact.
-          
+
           🔗 **Download Preview**: [documentation-preview-pr-${prNumber}](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${runId})
-          
+
           To view the preview:
           1. Download the artifact from the link above
           2. Extract the ZIP file
           3. Open \`index.html\` in your browser
-          
+
           The preview includes all changes from this PR.`;
-          
+
           // Check if we already commented
           const comments = await github.rest.issues.listComments({
             owner: context.repo.owner,
             repo: context.repo.repo,
             issue_number: prNumber
           });
-          
-          const existingComment = comments.data.find(comment => 
-            comment.user.login === 'github-actions[bot]' && 
+
+          const existingComment = comments.data.find(comment =>
+            comment.user.login === 'github-actions[bot]' &&
             comment.body.includes('Documentation Preview Built')
           );
-          
+
           if (existingComment) {
             // Update existing comment
             await github.rest.issues.updateComment({
@@ -257,7 +257,7 @@ jobs:
     steps:
     - name: Check documentation status
       run: |
-        if [[ "${{ needs.build.result }}" == "success" && 
+        if [[ "${{ needs.build.result }}" == "success" &&
               "${{ needs.quality.result }}" == "success" ]]; then
           echo "✅ Documentation checks passed!"
           echo "📖 Documentation is ready for deployment"

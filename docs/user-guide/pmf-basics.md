@@ -15,7 +15,7 @@ PMF decomposes a data matrix **X** into two matrices:
 Where:
 
 - **X** (n×m): Measured concentrations (n samples × m chemical species)
-- **G** (n×p): Factor contributions (n samples × p factors/sources)  
+- **G** (n×p): Factor contributions (n samples × p factors/sources)
 - **F** (p×m): Factor profiles (p factors × m chemical species)
 - **E** (n×m): Residual matrix (unexplained variance)
 
@@ -87,7 +87,7 @@ print(contributions.head())
 The F matrix shows **what chemical signature** characterizes each source:
 
 ```python
-# Example factor profiles  
+# Example factor profiles
 profiles = pmf.profiles_
 print(profiles.head())
 ```
@@ -165,7 +165,7 @@ for i in range(100):
     # Resample data with replacement
     boot_data = concentrations.sample(frac=1, replace=True)
     boot_unc = uncertainties.loc[boot_data.index]
-    
+
     # Fit PMF
     pmf_boot = PMF(n_components=5, random_state=i)
     pmf_boot.fit(boot_data, boot_unc)
@@ -238,6 +238,6 @@ Compare with:
 ## Next Steps
 
 - Learn about [Data Preparation](data-preparation.md) techniques
-- Explore [Running Analysis](running-analysis.md) workflows  
+- Explore [Running Analysis](running-analysis.md) workflows
 - Understand [Interpreting Results](interpreting-results.md) in detail
 - See practical [Examples](../examples/datasets.md)

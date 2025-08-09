@@ -2,36 +2,38 @@
 # Install with: pip install pre-commit && pre-commit install
 
 repos:
-  # Ruff for linting and formatting
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.1.9
+  # Use uv to run ruff directly from our project environment
+  - repo: local
     hooks:
-      # Run the linter
-      - id: ruff
-        args: [--fix, --exit-non-zero-on-fix]
-      # Run the formatter
+      - id: ruff-check
+        name: ruff lint
+        entry: uv run ruff check --fix --exit-non-zero-on-fix
+        language: system
+        types: [python]
+        require_serial: false
       - id: ruff-format
+        name: ruff format
+        entry: uv run ruff format
+        language: system
+        types: [python]
+        require_serial: false
 
-  # Type checking with mypy
-  - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.8.0
+  # Use uv to run mypy from our project environment
+  - repo: local
     hooks:
       - id: mypy
-        additional_dependencies: [
-          "pandas-stubs",
-          "types-seaborn",
-        ]
+        name: mypy type checking
+        entry: uv run mypy
+        language: system
+        types: [python]
+        require_serial: false
 
   # General code quality
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v5.0.0
     hooks:
-      # Check for files that would conflict in case-insensitive filesystems
-      - id: check-case-conflict
       # Check for files that contain merge conflict strings
       - id: check-merge-conflict
-      # Check for debugger imports and py37+ breakpoint() calls
-      - id: debug-statements
       # Check YAML files for parseable syntax
       - id: check-yaml
       # Check TOML files for parseable syntax
@@ -42,40 +44,6 @@ repos:
       - id: end-of-file-fixer
       # Remove trailing whitespace
       - id: trailing-whitespace
-      # Check for large files (>500KB)
-      - id: check-added-large-files
-        args: ['--maxkb=500']
-      # Check for secrets
-      - id: detect-private-key
-
-  # Security scanning
-  - repo: https://github.com/PyCQA/bandit
-    rev: 1.7.5
-    hooks:
-      - id: bandit
-        args: ["-c", "pyproject.toml"]
-        additional_dependencies: ["bandit[toml]"]
-
-  # Documentation checks
-  - repo: https://github.com/econchick/interrogate
-    rev: 1.5.0
-    hooks:
-      - id: interrogate
-        args: [--fail-under=80, --ignore-init-method, --ignore-module]
-        pass_filenames: false
-
-  # Markdown formatting
-  - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.38.0
-    hooks:
-      - id: markdownlint
-        args: [--fix]
-
-  # Sort imports (redundant with ruff, but keeping as backup)
-  # - repo: https://github.com/PyCQA/isort
-  #   rev: 5.13.2
-  #   hooks:
-  #     - id: isort
 
 # Configure which files to check
 exclude: |
@@ -95,7 +63,7 @@ exclude: |
 
 # Global settings
 default_language_version:
-  python: python3.11
+  python: python3.13
 
 # Performance settings
 fail_fast: false

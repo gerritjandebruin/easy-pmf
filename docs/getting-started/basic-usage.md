@@ -12,7 +12,7 @@ Positive Matrix Factorization (PMF) is a multivariate factor analysis tool that 
 
 Where:
 - **X**: Original data matrix (samples × species)
-- **G**: Factor contributions matrix (samples × factors) 
+- **G**: Factor contributions matrix (samples × factors)
 - **F**: Factor profiles matrix (factors × species)
 - **E**: Residual matrix (unexplained variance)
 
@@ -36,7 +36,7 @@ pmf = PMF(n_components=5)
 pmf = PMF(
     n_components=5,        # Number of factors/sources
     max_iter=1000,         # Maximum iterations
-    tol=1e-4,              # Convergence tolerance  
+    tol=1e-4,              # Convergence tolerance
     random_state=42        # For reproducible results
 )
 ```
@@ -68,7 +68,7 @@ concentrations = pd.DataFrame({
 # Uncertainties DataFrame (same structure)
 uncertainties = pd.DataFrame({
     'PM2.5': [2.5, 1.9, 3.2, ...],
-    'NO3': [0.5, 0.4, 0.7, ...], 
+    'NO3': [0.5, 0.4, 0.7, ...],
     'SO4': [0.8, 0.6, 1.0, ...],
     # ... more species
 }, index=concentrations.index)
@@ -142,7 +142,7 @@ print(f"Q-value: {q_value:.2f}")
 print("Factor contributions summary:")
 print(pmf.contributions_.describe())
 
-# Check factor profiles  
+# Check factor profiles
 print("Factor profiles summary:")
 print(pmf.profiles_.describe())
 ```
@@ -157,7 +157,7 @@ print(contributions.head())
 
 # Factor profiles (chemical signatures)
 profiles = pmf.profiles_
-print("Profiles shape:", profiles.shape)  
+print("Profiles shape:", profiles.shape)
 print(profiles.head())
 ```
 
@@ -222,21 +222,21 @@ print(new_contributions.head())
 # Process multiple datasets
 datasets = {
     'site1': 'site1_data.csv',
-    'site2': 'site2_data.csv', 
+    'site2': 'site2_data.csv',
     'site3': 'site3_data.csv'
 }
 
 results = {}
 for site, filename in datasets.items():
     print(f"Processing {site}...")
-    
+
     # Load data
     data = pd.read_csv(filename, index_col=0)
-    
+
     # Fit PMF
     pmf = PMF(n_components=5, random_state=42)
     pmf.fit(data)
-    
+
     # Store results
     results[site] = {
         'contributions': pmf.contributions_,
@@ -244,7 +244,7 @@ for site, filename in datasets.items():
         'q_value': pmf.score(data),
         'converged': pmf.converged_
     }
-    
+
     print(f"  Q-value: {results[site]['q_value']:.2f}")
     print(f"  Converged: {results[site]['converged']}")
 ```
@@ -276,29 +276,29 @@ except ValueError as e:
 def validate_pmf_data(concentrations, uncertainties=None):
     """Validate data for PMF analysis."""
     issues = []
-    
+
     # Check for negative values
     if (concentrations < 0).any().any():
         issues.append("Negative concentrations found")
-    
+
     # Check for NaN values
     if concentrations.isnull().any().any():
         issues.append("Missing values in concentrations")
-    
+
     # Check uncertainties if provided
     if uncertainties is not None:
         if concentrations.shape != uncertainties.shape:
             issues.append("Shape mismatch between concentrations and uncertainties")
         if (uncertainties <= 0).any().any():
             issues.append("Non-positive uncertainties found")
-    
+
     # Check for sufficient data
     if concentrations.shape[0] < 50:
         issues.append("Recommend at least 50 samples for stable PMF")
-    
+
     if concentrations.shape[1] < 5:
         issues.append("Recommend at least 5 species for meaningful PMF")
-    
+
     return issues
 
 # Use the validator

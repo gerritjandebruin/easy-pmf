@@ -56,7 +56,7 @@ body:
       render: python
       placeholder: |
         from easy_pmf import PMF
-        
+
         # Your code here that reproduces the issue
     validations:
       required: false
