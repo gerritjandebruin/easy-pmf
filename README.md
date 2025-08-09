@@ -5,6 +5,10 @@
 [![Python versions](https://img.shields.io/pypi/pyversions/easy-pmf.svg)](https://pypi.org/project/easy-pmf/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+[![CI/CD](https://github.com/gerritjandebruin/easy-pmf/actions/workflows/ci.yml/badge.svg)](https://github.com/gerritjandebruin/easy-pmf/actions/workflows/ci.yml)
+[![Documentation](https://github.com/gerritjandebruin/easy-pmf/actions/workflows/docs.yml/badge.svg)](https://gerritjandebruin.github.io/easy-pmf/)
+[![Publish](https://github.com/gerritjandebruin/easy-pmf/actions/workflows/publish.yml/badge.svg)](https://github.com/gerritjandebruin/easy-pmf/actions/workflows/publish.yml)
+
 **Easy PMF** is a comprehensive Python package for Positive Matrix Factorization (PMF) analysis, designed specifically for environmental data analysis such as air quality source apportionment. It provides an easy-to-use interface similar to EPA's PMF software with built-in visualization capabilities.
 
 :warning: This project is in the early stages of development and may not yet be suitable for production use.
