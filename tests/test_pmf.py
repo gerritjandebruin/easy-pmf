@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from pmf_analysis import PMF
+from easy_pmf import PMF
 
 
 class TestPMF:
@@ -95,7 +95,7 @@ def test_legacy_compatibility():
 
 def test_package_imports():
     """Test that the package can be imported correctly."""
-    from pmf_analysis import PMF
+    from easy_pmf import PMF
 
     assert PMF is not None
 

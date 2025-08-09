@@ -101,19 +101,19 @@ Repository = "https://github.com/easy-pmf/easy-pmf"
 Changelog = "https://github.com/easy-pmf/easy-pmf/blob/main/CHANGELOG.md"
 
 [project.scripts]
-easy-pmf = "pmf_analysis.cli:main"
+easy-pmf = "easy_pmf.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
 [tool.setuptools.package-data]
-pmf_analysis = ["data/*.csv", "data/*.txt", "examples/*.py"]
+easy_pmf = ["data/*.csv", "data/*.txt", "examples/*.py"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_functions = ["test_*"]
-addopts = "--cov=pmf_analysis --cov-report=html --cov-report=term-missing"
+addopts = "--cov=easy_pmf --cov-report=html --cov-report=term-missing"
 
 [tool.black]
 line-length = 88

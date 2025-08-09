@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
-from pmf_analysis import PMF
+from easy_pmf import PMF
 
 
 def get_available_datasets():
