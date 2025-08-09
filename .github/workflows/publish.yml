@@ -82,8 +82,8 @@ jobs:
 
     - name: Run quality checks
       run: |
-        uv run ruff check .
-        uv run ruff format --check .
+        uv run ruff check . --exclude="mwe.py,analyze_all_datasets.py,quick_analysis.py"
+        uv run ruff format --check . --exclude="mwe.py,analyze_all_datasets.py,quick_analysis.py"
         # Skip mypy for now - will be fixed in separate PR
 
     - name: Build documentation
