@@ -63,7 +63,7 @@ print(f"Iterations: {pmf.n_iter_}")
 easy-pmf
 
 # Or use the analysis scripts directly
-python -m pmf_analysis.quick_analysis
+python quick_analysis.py
 ```
 
 ## 📊 Included Example Datasets

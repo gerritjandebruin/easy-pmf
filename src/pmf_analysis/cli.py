@@ -87,7 +87,7 @@ def run_interactive_analysis(args: argparse.Namespace) -> None:
 
     # Try to import and run the quick analysis
     try:
-        from . import quick_analysis
+        import quick_analysis
 
         # Set up arguments for quick_analysis
         sys.argv = ["quick_analysis"]  # Reset sys.argv to avoid conflicts
@@ -104,7 +104,7 @@ def run_batch_analysis(args: argparse.Namespace) -> None:
     print("=" * 50)
 
     try:
-        from . import analyze_all_datasets
+        import analyze_all_datasets
 
         # Set up arguments for analyze_all_datasets
         sys.argv = ["analyze_all_datasets"]  # Reset sys.argv to avoid conflicts
