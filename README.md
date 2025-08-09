@@ -199,7 +199,7 @@ for site, files in datasets.items():
 
 This project features a comprehensive CI/CD infrastructure:
 
-- **✅ Automated Testing**: Matrix testing across Python 3.9-3.12 on Ubuntu, macOS, and Windows
+- **✅ Automated Testing**: Matrix testing across Python 3.9-3.13 on Ubuntu, macOS, and Windows
 - **✅ Code Quality**: Automated linting, formatting, and type checking with pre-commit hooks
 - **✅ Security Scanning**: Dependency vulnerability scanning with Bandit
 - **✅ Documentation**: Automatic deployment to GitHub Pages

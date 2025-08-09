@@ -30,7 +30,7 @@ This directory contains GitHub-specific configuration files and templates for th
 
 ### CI/CD Pipeline (`ci.yml`)
 - **Triggers**: Push to main/develop, pull requests
-- **Matrix Testing**: Python 3.9-3.12 on Ubuntu, Windows, macOS
+- **Matrix Testing**: Python 3.9-3.13 on Ubuntu, Windows, macOS
 - **Quality Checks**: Ruff linting/formatting, mypy type checking
 - **Security**: Safety and bandit scans
 - **Documentation**: MkDocs build verification
