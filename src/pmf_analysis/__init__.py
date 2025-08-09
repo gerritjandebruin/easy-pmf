@@ -89,9 +89,9 @@ class PMF:
         self.random_state = random_state
 
         # Initialize attributes that will be set during fitting
-        self.contributions_ = None
-        self.profiles_ = None
-        self.n_iter_ = None
+        self.contributions_: Optional[pd.DataFrame] = None
+        self.profiles_: Optional[pd.DataFrame] = None
+        self.n_iter_: Optional[int] = None
         self.converged_ = False
 
     def fit(self, x: pd.DataFrame, u: Optional[pd.DataFrame] = None) -> "PMF":
@@ -149,9 +149,9 @@ class PMF:
         self._X_columns = x.columns
 
         # Convert the data to numpy arrays
-        x_array = x.values.astype(float)
+        x_array: np.ndarray = x.values.astype(float)
         if u is not None:
-            u_array = u.values.astype(float)
+            u_array: np.ndarray = u.values.astype(float)
         else:
             u_array = np.ones_like(x_array)
 
@@ -302,7 +302,7 @@ class PMF:
 
         # Calculate Q value (weighted sum of squared residuals)
         residuals = (x_array - x_reconstructed) / u_array
-        q_value = np.sum(residuals**2)
+        q_value: float = float(np.sum(residuals**2))
 
         return q_value
 

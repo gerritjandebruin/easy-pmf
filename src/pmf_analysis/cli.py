@@ -7,7 +7,7 @@ import argparse
 import sys
 
 
-def main():
+def main() -> None:
     """Main entry point for the easy-pmf command-line tool."""
     parser = argparse.ArgumentParser(
         description="Easy PMF - Command Line Interface for Positive Matrix "
@@ -80,7 +80,7 @@ For more information, visit: https://github.com/easy-pmf/easy-pmf
         sys.exit(1)
 
 
-def run_interactive_analysis(args):
+def run_interactive_analysis(args: argparse.Namespace) -> None:
     """Run interactive analysis mode."""
     print("🌟 Welcome to Easy PMF Interactive Analysis!")
     print("=" * 50)
@@ -98,7 +98,7 @@ def run_interactive_analysis(args):
         sys.exit(1)
 
 
-def run_batch_analysis(args):
+def run_batch_analysis(args: argparse.Namespace) -> None:
     """Run batch analysis on all datasets."""
     print("🚀 Running batch analysis on all datasets...")
     print("=" * 50)

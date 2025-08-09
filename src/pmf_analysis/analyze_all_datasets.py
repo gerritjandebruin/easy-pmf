@@ -14,7 +14,12 @@ import seaborn as sns
 from . import PMF
 
 
-def analyze_dataset(dataset_name, dataset_info, output_dir, n_components=7):
+def analyze_dataset(
+    dataset_name: str,
+    dataset_info: dict[str, str],
+    output_dir: Path,
+    n_components: int = 7
+) -> bool:
     """Analyze a single dataset with PMF and generate all visualizations.
 
     Parameters:
@@ -101,6 +106,12 @@ def analyze_dataset(dataset_name, dataset_info, output_dir, n_components=7):
 
     # Save the results
     print("Saving PMF results...")
+
+    # Ensure PMF was fitted successfully
+    if pmf.contributions_ is None or pmf.profiles_ is None:
+        print(f"Error: PMF fitting failed for {dataset_name}")
+        return False
+
     # The contributions tell you how much each factor contributes
     # to each sample (time point)
     contributions = pd.DataFrame(
@@ -133,8 +144,12 @@ def analyze_dataset(dataset_name, dataset_info, output_dir, n_components=7):
 
 
 def generate_visualizations(
-    dataset_name, concentrations, contributions, profiles, output_dir
-):
+    dataset_name: str,
+    concentrations: pd.DataFrame,
+    contributions: pd.DataFrame,
+    profiles: pd.DataFrame,
+    output_dir: Path,
+) -> None:
     """Generate all PMF visualizations for a dataset."""
     print("Creating heatmap visualizations...")
 
@@ -232,7 +247,7 @@ def generate_visualizations(
             bars = ax.bar(
                 range(len(top_species)),
                 top_species.values,
-                color=plt.cm.viridis(i / len(profiles.index)),
+                color=plt.cm.viridis(i / len(profiles.index)),  # type: ignore
             )
             ax.set_title(f"{factor} - Top Species", fontweight="bold")
             ax.set_xticks(range(len(top_species)))
@@ -455,7 +470,7 @@ def generate_visualizations(
     )
 
 
-def main():
+def main() -> None:
     """Main function to analyze all datasets."""
     # Create output directory if it doesn't exist
     output_dir = Path("output")
