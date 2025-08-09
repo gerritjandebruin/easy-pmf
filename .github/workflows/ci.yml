@@ -234,11 +234,12 @@ jobs:
 
     - name: Install package from wheel
       run: |
+        uv venv
         uv pip install dist/*.whl
 
     - name: Run integration tests
       run: |
-        python -c "import easy_pmf; print('Package imports successfully')"
+        uv run python -c "import easy_pmf; print('Package imports successfully')"
         # Add more integration tests here if you have them
 
   # =====================================================
