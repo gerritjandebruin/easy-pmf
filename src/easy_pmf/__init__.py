@@ -48,7 +48,7 @@ class PMF:
     Examples:
     --------
     >>> import pandas as pd
-    >>> from pmf_analysis import PMF
+    >>> from easy_pmf import PMF
     >>>
     >>> # Load your concentration and uncertainty data
     >>> concentrations = pd.read_csv("concentrations.csv", index_col=0)

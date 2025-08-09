@@ -33,7 +33,7 @@ pip install easy-pmf
 
 ```python
 import pandas as pd
-from pmf_analysis import PMF
+from easy_pmf import PMF
 
 # Load your concentration and uncertainty data
 concentrations = pd.read_csv("concentrations.csv", index_col=0)
@@ -118,7 +118,7 @@ Easy PMF automatically generates comprehensive visualizations:
 ### Custom Analysis Pipeline
 
 ```python
-from pmf_analysis import PMF
+from easy_pmf import PMF
 import matplotlib.pyplot as plt
 
 # Load and preprocess data
@@ -161,7 +161,7 @@ plt.show()
 
 ```python
 import os
-from pmf_analysis import PMF
+from easy_pmf import PMF
 
 datasets = {
     "site1": {"conc": "site1_conc.csv", "unc": "site1_unc.csv"},

@@ -11,7 +11,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 
-from pmf_analysis import PMF
+from easy_pmf import PMF
 
 
 def analyze_dataset(dataset_name, dataset_info, output_dir, n_components=7):
