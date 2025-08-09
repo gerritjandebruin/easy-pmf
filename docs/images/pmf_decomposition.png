@@ -1,0 +1,44 @@
+# PMF Decomposition Diagram
+
+Since we cannot include a proper PNG image file in this text-based setup, here's an ASCII representation of PMF decomposition:
+
+```
+PMF DECOMPOSITION: X = G × F + E
+
+Original Data Matrix (X)         Factor Contributions (G)    Factor Profiles (F)
+     Species 1,2,3,...,m              Factors 1,2,...,p         Species 1,2,3,...,m
+    ┌─────────────────┐             ┌───────────────┐         ┌─────────────────┐
+S1  │ x11  x12  x13   │         S1  │ g11  g12      │    F1   │ f11  f12  f13   │
+a2  │ x21  x22  x23   │         a2  │ g21  g22      │    F2   │ f21  f22  f23   │
+m3  │ x31  x32  x33   │    =    m3  │ g31  g32      │    ×    F3   │              │
+p4  │ x41  x42  x43   │         p4  │ g41  g42      │         .    │              │
+l5  │ x51  x52  x53   │         l5  │ g51  g52      │         .    │              │
+e.  │  .    .    .    │         e.  │  .    .       │         .    │              │
+s.  │  .    .    .    │         s.  │  .    .       │         Fp   │ fp1  fp2  fp3│
+n   │ xn1  xn2  xn3   │         n   │ gn1  gn2      │              │              │
+    └─────────────────┘             └───────────────┘              └─────────────────┘
+      (n × m matrix)                   (n × p matrix)                (p × m matrix)
+
+Where:
+- X: Original concentration data (samples × species)
+- G: Factor contributions (samples × factors) - "when" sources are active
+- F: Factor profiles (factors × species) - "what" each source emits
+- E: Residual/error matrix (not shown)
+- n: Number of samples (time points)
+- m: Number of chemical species
+- p: Number of factors (sources)
+
+Interpretation:
+- G tells us WHEN each source contributes (time series)
+- F tells us WHAT each source emits (chemical signature)
+- Each row in F represents a source's chemical fingerprint
+- Each column in G represents a source's temporal pattern
+```
+
+**Note**: In a real implementation, this would be replaced with a proper PNG diagram showing:
+- Visual representation of matrix decomposition
+- Example factor profiles as bar charts
+- Example time series of factor contributions
+- Color-coded source assignments
+
+To create the actual PNG file, you would need to generate it using a tool like matplotlib, draw.io, or other graphics software.
