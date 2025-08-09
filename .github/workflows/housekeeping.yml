@@ -1,0 +1,192 @@
+name: Manage Stale Issues and PRs
+
+on:
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  stale:
+    name: Mark Stale Issues and PRs
+    runs-on: ubuntu-latest
+    
+    permissions:
+      issues: write
+      pull-requests: write
+
+    steps:
+    - name: Mark stale issues and PRs
+      uses: actions/stale@v9
+      with:
+        # General settings
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        
+        # Days before marking stale
+        days-before-stale: 60
+        days-before-close: 14
+        
+        # Labels
+        stale-issue-label: 'stale'
+        stale-pr-label: 'stale'
+        
+        # Messages
+        stale-issue-message: |
+          👋 This issue has been automatically marked as stale because it has not had recent activity. 
+          
+          📅 It will be closed in 14 days if no further activity occurs.
+          
+          🔄 To keep this issue open, please:
+          - Add a comment explaining why this should remain open
+          - Add the `pinned` label to prevent auto-closure
+          - Continue working on the issue
+          
+          Thank you for your contributions! 🙏
+          
+        stale-pr-message: |
+          👋 This pull request has been automatically marked as stale because it has not had recent activity.
+          
+          📅 It will be closed in 14 days if no further activity occurs.
+          
+          🔄 To keep this PR open, please:
+          - Push new commits or request a review
+          - Add a comment explaining the current status
+          - Add the `pinned` label to prevent auto-closure
+          
+          Thank you for your contributions! 🙏
+
+        close-issue-message: |
+          🔒 This issue has been automatically closed due to inactivity.
+          
+          💡 If you believe this issue should remain open, please:
+          - Reopen the issue with updated information
+          - Reference any new developments
+          - Add relevant details or examples
+          
+          We appreciate your understanding! 🙏
+
+        close-pr-message: |
+          🔒 This pull request has been automatically closed due to inactivity.
+          
+          💡 If you'd like to continue with this PR, please:
+          - Reopen the PR and address any conflicts
+          - Update the code to reflect current requirements
+          - Request a fresh review
+          
+          We appreciate your understanding! 🙏
+
+        # Exemptions
+        exempt-issue-labels: 'pinned,security,bug,help wanted,good first issue'
+        exempt-pr-labels: 'pinned,security,dependencies'
+        
+        # Only process a limited number to avoid rate limits
+        operations-per-run: 50
+        
+        # Don't close PRs marked as draft
+        exempt-draft-pr: true
+        
+        # Additional settings
+        remove-stale-when-updated: true
+        ascending: true
+        delete-branch: false
+
+  # Clean up old workflow runs
+  cleanup:
+    name: Cleanup Old Workflow Runs
+    runs-on: ubuntu-latest
+    
+    permissions:
+      actions: write
+
+    steps:
+    - name: Delete old workflow runs
+      uses: Mattraks/delete-workflow-runs@v2
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        repository: ${{ github.repository }}
+        retain_days: 30
+        keep_minimum_runs: 10
+
+  # Generate activity report
+  activity-report:
+    name: Generate Activity Report
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    
+    steps:
+    - name: Generate repository activity report
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+          
+          // Get recent issues
+          const issues = await github.rest.issues.listForRepo({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            state: 'all',
+            since: thirtyDaysAgo.toISOString(),
+            per_page: 100
+          });
+          
+          // Get recent PRs
+          const prs = await github.rest.pulls.list({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            state: 'all',
+            sort: 'updated',
+            direction: 'desc',
+            per_page: 100
+          });
+          
+          // Filter PRs by date
+          const recentPRs = prs.data.filter(pr => 
+            new Date(pr.updated_at) > thirtyDaysAgo
+          );
+          
+          // Categorize issues
+          const openIssues = issues.data.filter(issue => 
+            !issue.pull_request && issue.state === 'open'
+          );
+          const closedIssues = issues.data.filter(issue => 
+            !issue.pull_request && issue.state === 'closed'
+          );
+          
+          // Categorize PRs
+          const openPRs = recentPRs.filter(pr => pr.state === 'open');
+          const mergedPRs = recentPRs.filter(pr => pr.merged_at);
+          const closedPRs = recentPRs.filter(pr => 
+            pr.state === 'closed' && !pr.merged_at
+          );
+          
+          console.log('📊 Repository Activity Report (Last 30 Days)');
+          console.log('=' .repeat(50));
+          console.log(`📋 Issues:`);
+          console.log(`   • Open: ${openIssues.length}`);
+          console.log(`   • Closed: ${closedIssues.length}`);
+          console.log(`📮 Pull Requests:`);
+          console.log(`   • Open: ${openPRs.length}`);
+          console.log(`   • Merged: ${mergedPRs.length}`);
+          console.log(`   • Closed: ${closedPRs.length}`);
+          console.log('=' .repeat(50));
+          
+          // Check for issues that might need attention
+          const oldOpenIssues = openIssues.filter(issue => {
+            const created = new Date(issue.created_at);
+            const daysSinceCreated = (Date.now() - created.getTime()) / (1000 * 60 * 60 * 24);
+            return daysSinceCreated > 30;
+          });
+          
+          if (oldOpenIssues.length > 0) {
+            console.log(`⚠️  ${oldOpenIssues.length} issues are older than 30 days`);
+          }
+          
+          const oldOpenPRs = openPRs.filter(pr => {
+            const created = new Date(pr.created_at);
+            const daysSinceCreated = (Date.now() - created.getTime()) / (1000 * 60 * 60 * 24);
+            return daysSinceCreated > 14;
+          });
+          
+          if (oldOpenPRs.length > 0) {
+            console.log(`⚠️  ${oldOpenPRs.length} PRs are older than 14 days`);
+          }

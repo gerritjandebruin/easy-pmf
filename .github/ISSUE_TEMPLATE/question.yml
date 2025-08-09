@@ -1,0 +1,69 @@
+name: Question
+description: Ask a question about using Easy PMF
+title: "❓ [Question]: "
+labels: ["question"]
+assignees: ["gerritjandebruin"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have a question about using Easy PMF? Please fill out the form below and we'll help you out!
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Question
+      description: What would you like to know?
+      placeholder: "How do I..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Provide some context about what you're trying to accomplish
+      placeholder: "I'm trying to analyze atmospheric data and..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: attempted
+    attributes:
+      label: What I've Tried
+      description: What have you already tried? Include any code or approaches you've attempted
+      render: python
+      placeholder: |
+        # What I've tried so far
+        pmf = PMF()
+        # ... my code
+    validations:
+      required: false
+
+  - type: input
+    id: version
+    attributes:
+      label: Easy PMF Version
+      description: What version of Easy PMF are you using?
+      placeholder: "e.g., 1.0.0"
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Information
+      description: Any additional information that might be helpful
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      description: Please confirm the following
+      options:
+        - label: I have checked the documentation for answers to my question
+          required: true
+        - label: I have searched existing issues and discussions for similar questions
+          required: true

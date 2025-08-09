@@ -1,0 +1,301 @@
+name: Publish to PyPI
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      publish_to_testpypi:
+        description: 'Publish to TestPyPI instead of PyPI'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  # =====================================================
+  # Pre-publish Validation
+  # =====================================================
+  validate:
+    name: Validate Release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+      is_prerelease: ${{ steps.check_prerelease.outputs.is_prerelease }}
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+
+    - name: Install dependencies
+      run: uv sync --all-groups
+
+    - name: Get version from pyproject.toml
+      id: get_version
+      run: |
+        VERSION=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml', 'rb'))['project']['version'])")
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Package version: $VERSION"
+
+    - name: Check if prerelease
+      id: check_prerelease
+      run: |
+        VERSION="${{ steps.get_version.outputs.version }}"
+        if [[ "$VERSION" =~ (a|b|rc) ]]; then
+          echo "is_prerelease=true" >> $GITHUB_OUTPUT
+          echo "This is a prerelease version: $VERSION"
+        else
+          echo "is_prerelease=false" >> $GITHUB_OUTPUT
+          echo "This is a stable release: $VERSION"
+        fi
+
+    - name: Validate version matches tag (for releases)
+      if: github.event_name == 'release'
+      run: |
+        TAG_VERSION="${{ github.event.release.tag_name }}"
+        PACKAGE_VERSION="${{ steps.get_version.outputs.version }}"
+        
+        # Remove 'v' prefix from tag if present
+        TAG_VERSION=${TAG_VERSION#v}
+        
+        if [[ "$TAG_VERSION" != "$PACKAGE_VERSION" ]]; then
+          echo "❌ Version mismatch!"
+          echo "  Tag version: $TAG_VERSION"
+          echo "  Package version: $PACKAGE_VERSION"
+          exit 1
+        fi
+        
+        echo "✅ Version validation passed: $PACKAGE_VERSION"
+
+    - name: Run full test suite
+      run: |
+        uv run pytest --cov=easy_pmf
+
+    - name: Run quality checks
+      run: |
+        uv run ruff check .
+        uv run ruff format --check .
+        uv run mypy .
+
+    - name: Build documentation
+      run: |
+        uv run mkdocs build --strict
+
+  # =====================================================
+  # Build Distribution
+  # =====================================================
+  build:
+    name: Build Distribution
+    runs-on: ubuntu-latest
+    needs: validate
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+
+    - name: Install build dependencies
+      run: uv sync --group dev
+
+    - name: Build package
+      run: |
+        uv run python -m build
+
+    - name: Check distribution
+      run: |
+        uv run twine check dist/*
+
+    - name: List built files
+      run: |
+        echo "Built distribution files:"
+        ls -la dist/
+
+    - name: Upload distribution artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: python-package-distributions
+        path: dist/
+
+  # =====================================================
+  # Publish to TestPyPI (for testing)
+  # =====================================================
+  publish-testpypi:
+    name: Publish to TestPyPI
+    runs-on: ubuntu-latest
+    needs: [validate, build]
+    if: >
+      github.event_name == 'workflow_dispatch' && 
+      github.event.inputs.publish_to_testpypi == 'true'
+    # environment:
+    #   name: test-pypi
+    #   url: https://test.pypi.org/p/easy-pmf
+    permissions:
+      id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
+
+    steps:
+    - name: Download distribution artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: python-package-distributions
+        path: dist/
+
+    - name: Publish to TestPyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        repository-url: https://test.pypi.org/legacy/
+
+    - name: Test installation from TestPyPI
+      run: |
+        sleep 30  # Wait for package to be available
+        pip install --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple/ easy-pmf==${{ needs.validate.outputs.version }}
+        python -c "import easy_pmf; print(f'Successfully installed easy-pmf {easy_pmf.__version__}')"
+
+  # =====================================================
+  # Publish to PyPI (production)
+  # =====================================================
+  publish-pypi:
+    name: Publish to PyPI
+    runs-on: ubuntu-latest
+    needs: [validate, build]
+    if: >
+      github.event_name == 'release' ||
+      (github.event_name == 'workflow_dispatch' && 
+       github.event.inputs.publish_to_testpypi == 'false')
+    # environment:
+    #   name: release
+    #   url: https://pypi.org/p/easy-pmf
+    permissions:
+      id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
+
+    steps:
+    - name: Download distribution artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: python-package-distributions
+        path: dist/
+
+    - name: Publish to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+
+    - name: Create success comment (for releases)
+      if: github.event_name == 'release'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const version = "${{ needs.validate.outputs.version }}";
+          const isPrerelease = "${{ needs.validate.outputs.is_prerelease }}" === "true";
+          
+          const emoji = isPrerelease ? "🚀" : "🎉";
+          const releaseType = isPrerelease ? "pre-release" : "stable release";
+          
+          const body = `${emoji} **Successfully published ${releaseType} v${version} to PyPI!**
+          
+          📦 **Package**: https://pypi.org/project/easy-pmf/
+          📋 **Version**: ${version}
+          📅 **Published**: ${new Date().toISOString().split('T')[0]}
+          
+          ## Installation
+          \`\`\`bash
+          pip install easy-pmf==${version}
+          # or upgrade existing installation
+          pip install --upgrade easy-pmf
+          \`\`\`
+          
+          ## What's included
+          - 🐍 Python 3.9+ support
+          - 📊 PMF analysis capabilities
+          - 📖 Comprehensive documentation
+          - 🧪 Full test suite
+          
+          Thank you for using Easy PMF! 🌟`;
+          
+          github.rest.issues.createComment({
+            issue_number: context.payload.release.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: body
+          });
+
+  # =====================================================
+  # Post-publish Verification
+  # =====================================================
+  verify:
+    name: Verify Publication
+    runs-on: ubuntu-latest
+    needs: [validate, publish-pypi]
+    if: needs.publish-pypi.result == 'success'
+    steps:
+    - name: Wait for package availability
+      run: |
+        echo "Waiting for package to be available on PyPI..."
+        sleep 60  # Wait 1 minute for package to be indexed
+
+    - name: Test installation from PyPI
+      run: |
+        pip install easy-pmf==${{ needs.validate.outputs.version }}
+        python -c "import easy_pmf; print(f'✅ Successfully installed easy-pmf {easy_pmf.__version__} from PyPI')"
+
+    - name: Test basic functionality
+      run: |
+        python -c "
+        import easy_pmf
+        print('✅ Package imports successfully')
+        
+        # Test basic functionality if possible
+        try:
+            from easy_pmf import PMF
+            pmf = PMF()
+            print('✅ PMF class instantiated successfully')
+        except Exception as e:
+            print(f'⚠️  Warning: Could not test PMF class: {e}')
+        "
+
+  # =====================================================
+  # Create GitHub Release Assets
+  # =====================================================
+  release-assets:
+    name: Upload Release Assets
+    runs-on: ubuntu-latest
+    needs: [validate, build]
+    if: github.event_name == 'release'
+    steps:
+    - name: Download distribution artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: python-package-distributions
+        path: dist/
+
+    - name: Upload wheel to release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: dist/easy_pmf-${{ needs.validate.outputs.version }}-py3-none-any.whl
+        asset_name: easy_pmf-${{ needs.validate.outputs.version }}-py3-none-any.whl
+        asset_content_type: application/zip
+
+    - name: Upload source distribution to release
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: dist/easy-pmf-${{ needs.validate.outputs.version }}.tar.gz
+        asset_name: easy-pmf-${{ needs.validate.outputs.version }}.tar.gz
+        asset_content_type: application/gzip

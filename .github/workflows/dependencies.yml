@@ -1,0 +1,295 @@
+name: Dependency Updates
+
+on:
+  schedule:
+    # Run every Monday at 6 AM UTC
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  # =====================================================
+  # Update Dependencies
+  # =====================================================
+  update-dependencies:
+    name: Update Dependencies
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+
+    - name: Update uv.lock
+      run: |
+        # Update all dependencies
+        uv lock --upgrade
+        
+        # Check if there are any changes
+        if git diff --quiet uv.lock; then
+          echo "NO_UPDATES=true" >> $GITHUB_ENV
+          echo "No dependency updates available"
+        else
+          echo "NO_UPDATES=false" >> $GITHUB_ENV
+          echo "Dependencies updated"
+        fi
+
+    - name: Install updated dependencies
+      if: env.NO_UPDATES == 'false'
+      run: |
+        uv sync --all-groups
+
+    - name: Run tests with updated dependencies
+      if: env.NO_UPDATES == 'false'
+      run: |
+        uv run pytest --cov=easy_pmf
+
+    - name: Run quality checks with updated dependencies
+      if: env.NO_UPDATES == 'false'
+      run: |
+        uv run ruff check .
+        uv run mypy .
+
+    - name: Build documentation with updated dependencies
+      if: env.NO_UPDATES == 'false'
+      run: |
+        uv run mkdocs build --strict
+
+    - name: Generate update summary
+      if: env.NO_UPDATES == 'false'
+      run: |
+        echo "# Dependency Update Summary" > update_summary.md
+        echo "" >> update_summary.md
+        echo "This automated PR updates project dependencies to their latest compatible versions." >> update_summary.md
+        echo "" >> update_summary.md
+        echo "## Changes" >> update_summary.md
+        echo "" >> update_summary.md
+        echo '```diff' >> update_summary.md
+        git diff uv.lock >> update_summary.md
+        echo '```' >> update_summary.md
+        echo "" >> update_summary.md
+        echo "## Testing" >> update_summary.md
+        echo "" >> update_summary.md
+        echo "- ✅ All tests pass" >> update_summary.md
+        echo "- ✅ Code quality checks pass" >> update_summary.md
+        echo "- ✅ Documentation builds successfully" >> update_summary.md
+        echo "" >> update_summary.md
+        echo "## Review" >> update_summary.md
+        echo "" >> update_summary.md
+        echo "Please review the changes and merge if everything looks good." >> update_summary.md
+        echo "This update was automatically generated and tested." >> update_summary.md
+
+    - name: Create Pull Request
+      if: env.NO_UPDATES == 'false'
+      uses: peter-evans/create-pull-request@v5
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: "⬆️ Update dependencies"
+        title: "⬆️ Automated dependency updates"
+        body-path: update_summary.md
+        branch: automated/dependency-updates
+        delete-branch: true
+        labels: |
+          dependencies
+          automated
+        reviewers: gerritjandebruin
+        assignees: gerritjandebruin
+
+  # =====================================================
+  # Security Audit
+  # =====================================================
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+
+    - name: Install dependencies
+      run: |
+        uv sync --all-groups
+
+    - name: Run safety check
+      run: |
+        uv run pip install safety
+        uv run safety check --json --output safety-report.json
+      continue-on-error: true
+
+    - name: Run bandit security scan
+      run: |
+        uv run pip install bandit
+        uv run bandit -r src/ -f json -o bandit-report.json
+      continue-on-error: true
+
+    - name: Check for vulnerabilities
+      run: |
+        echo "## Security Audit Results" > security_report.md
+        echo "" >> security_report.md
+        
+        # Check safety results
+        if [ -f safety-report.json ]; then
+          vulnerabilities=$(jq '.vulnerabilities | length' safety-report.json 2>/dev/null || echo "0")
+          if [ "$vulnerabilities" -gt 0 ]; then
+            echo "⚠️ **Safety Check**: Found $vulnerabilities vulnerability(s)" >> security_report.md
+            echo "" >> security_report.md
+            echo "Please review the safety report for details." >> security_report.md
+          else
+            echo "✅ **Safety Check**: No known vulnerabilities found" >> security_report.md
+          fi
+        else
+          echo "❌ **Safety Check**: Failed to run" >> security_report.md
+        fi
+        echo "" >> security_report.md
+        
+        # Check bandit results
+        if [ -f bandit-report.json ]; then
+          issues=$(jq '.results | length' bandit-report.json 2>/dev/null || echo "0")
+          if [ "$issues" -gt 0 ]; then
+            echo "⚠️ **Bandit Scan**: Found $issues potential security issue(s)" >> security_report.md
+            echo "" >> security_report.md
+            echo "Please review the bandit report for details." >> security_report.md
+          else
+            echo "✅ **Bandit Scan**: No security issues found" >> security_report.md
+          fi
+        else
+          echo "❌ **Bandit Scan**: Failed to run" >> security_report.md
+        fi
+
+    - name: Upload security reports
+      uses: actions/upload-artifact@v4
+      with:
+        name: security-reports
+        path: |
+          safety-report.json
+          bandit-report.json
+          security_report.md
+
+    - name: Create security issue if vulnerabilities found
+      if: always()
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          
+          let hasVulnerabilities = false;
+          let reportContent = "# Security Audit Report\n\n";
+          
+          // Check safety report
+          try {
+            const safetyReport = JSON.parse(fs.readFileSync('safety-report.json', 'utf8'));
+            const vulnCount = safetyReport.vulnerabilities?.length || 0;
+            if (vulnCount > 0) {
+              hasVulnerabilities = true;
+              reportContent += `## 🚨 Safety Check: ${vulnCount} vulnerabilities found\n\n`;
+              safetyReport.vulnerabilities.forEach(vuln => {
+                reportContent += `- **${vuln.package_name}** ${vuln.installed_version}: ${vuln.advisory}\n`;
+              });
+              reportContent += "\n";
+            }
+          } catch (e) {
+            console.log('No safety report found or parsing failed');
+          }
+          
+          // Check bandit report
+          try {
+            const banditReport = JSON.parse(fs.readFileSync('bandit-report.json', 'utf8'));
+            const issueCount = banditReport.results?.length || 0;
+            if (issueCount > 0) {
+              hasVulnerabilities = true;
+              reportContent += `## 🚨 Bandit Scan: ${issueCount} potential issues found\n\n`;
+              banditReport.results.slice(0, 5).forEach(issue => {
+                reportContent += `- **${issue.test_name}** in ${issue.filename}:${issue.line_number}: ${issue.issue_text}\n`;
+              });
+              if (issueCount > 5) {
+                reportContent += `- ... and ${issueCount - 5} more issues\n`;
+              }
+              reportContent += "\n";
+            }
+          } catch (e) {
+            console.log('No bandit report found or parsing failed');
+          }
+          
+          if (hasVulnerabilities) {
+            reportContent += "## Next Steps\n\n";
+            reportContent += "1. Review the security reports in the workflow artifacts\n";
+            reportContent += "2. Update vulnerable dependencies\n";
+            reportContent += "3. Address any code security issues\n";
+            reportContent += "4. Re-run the security audit\n";
+            
+            // Create issue
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🚨 Security vulnerabilities detected - ${new Date().toISOString().split('T')[0]}`,
+              body: reportContent,
+              labels: ['security', 'urgent']
+            });
+          }
+
+  # =====================================================
+  # Dependency Analysis
+  # =====================================================
+  analyze-dependencies:
+    name: Analyze Dependencies
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+
+    - name: Analyze dependencies
+      run: |
+        # Get dependency information
+        echo "# Dependency Analysis Report" > dependency_analysis.md
+        echo "" >> dependency_analysis.md
+        echo "Generated on: $(date)" >> dependency_analysis.md
+        echo "" >> dependency_analysis.md
+        
+        echo "## Direct Dependencies" >> dependency_analysis.md
+        echo "" >> dependency_analysis.md
+        echo "| Package | Version | License |" >> dependency_analysis.md
+        echo "|---------|---------|---------|" >> dependency_analysis.md
+        
+        # Install pip-licenses for license checking
+        uv run pip install pip-licenses
+        
+        # Get license information
+        uv run pip-licenses --format=markdown >> dependency_analysis.md
+        
+        echo "" >> dependency_analysis.md
+        echo "## Dependency Tree" >> dependency_analysis.md
+        echo "" >> dependency_analysis.md
+        echo '```' >> dependency_analysis.md
+        uv tree >> dependency_analysis.md 2>&1 || echo "Dependency tree not available" >> dependency_analysis.md
+        echo '```' >> dependency_analysis.md
+
+    - name: Upload dependency analysis
+      uses: actions/upload-artifact@v4
+      with:
+        name: dependency-analysis
+        path: dependency_analysis.md

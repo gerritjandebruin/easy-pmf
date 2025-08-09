@@ -1,0 +1,269 @@
+name: Deploy Documentation
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'docs/**'
+      - 'mkdocs.yml'
+      - '.github/workflows/docs.yml'
+  release:
+    types: [published]
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  # =====================================================
+  # Build Documentation
+  # =====================================================
+  build:
+    name: Build Documentation
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Fetch full history for git info
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+
+    - name: Install dependencies
+      run: |
+        uv sync --group docs
+
+    - name: Configure Git for MkDocs
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+
+    - name: Build documentation
+      run: |
+        uv run mkdocs build --clean --strict
+
+    - name: Upload documentation artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: documentation-site
+        path: site/
+        retention-days: 30
+
+  # =====================================================
+  # Deploy to GitHub Pages
+  # =====================================================
+  deploy:
+    name: Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main' || github.event_name == 'release'
+    
+    # Grant GITHUB_TOKEN the permissions required to make a Pages deployment
+    permissions:
+      pages: write      # to deploy to Pages
+      id-token: write   # to verify the deployment originates from an appropriate source
+
+    # Deploy to the github-pages environment
+    # environment:
+    #   name: github-pages
+    #   url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+
+    - name: Install dependencies
+      run: |
+        uv sync --group docs
+
+    - name: Configure Git for MkDocs
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+
+    - name: Deploy to GitHub Pages
+      run: |
+        uv run mkdocs gh-deploy --force --clean
+
+  # =====================================================
+  # Documentation Quality Checks
+  # =====================================================
+  quality:
+    name: Documentation Quality
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+
+    - name: Install dependencies
+      run: |
+        uv sync --group docs
+
+    - name: Check for broken links
+      run: |
+        uv run mkdocs build --strict
+
+    - name: Validate markdown files
+      run: |
+        # Check for common markdown issues
+        find docs/ -name "*.md" -exec grep -l "TODO\|FIXME\|XXX" {} \; > todo_files.txt || true
+        if [ -s todo_files.txt ]; then
+          echo "⚠️ Found TODO/FIXME items in documentation:"
+          cat todo_files.txt
+          echo "Please address these before deploying to production."
+        else
+          echo "✅ No TODO/FIXME items found in documentation."
+        fi
+
+    - name: Check documentation completeness
+      run: |
+        echo "📊 Documentation Statistics:"
+        echo "Total markdown files: $(find docs/ -name "*.md" | wc -l)"
+        echo "Total lines in docs: $(find docs/ -name "*.md" -exec wc -l {} \; | awk '{sum+=$1} END {print sum}')"
+        echo ""
+        
+        # Check for empty files
+        empty_files=$(find docs/ -name "*.md" -size 0)
+        if [ -n "$empty_files" ]; then
+          echo "⚠️ Empty documentation files found:"
+          echo "$empty_files"
+        else
+          echo "✅ No empty documentation files found."
+        fi
+
+    - name: Upload quality report
+      uses: actions/upload-artifact@v4
+      with:
+        name: documentation-quality-report
+        path: |
+          todo_files.txt
+        if-no-files-found: ignore
+
+  # =====================================================
+  # Documentation Preview (for PRs)
+  # =====================================================
+  preview:
+    name: Documentation Preview
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v3
+
+    - name: Install dependencies
+      run: |
+        uv sync --group docs
+
+    - name: Build documentation preview
+      run: |
+        uv run mkdocs build --clean
+
+    - name: Upload preview
+      uses: actions/upload-artifact@v4
+      with:
+        name: documentation-preview
+        path: site/
+
+    - name: Comment on PR with preview info
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const prNumber = context.payload.pull_request.number;
+          const runId = context.runId;
+          
+          const body = `📖 **Documentation Preview Built**
+          
+          The documentation has been built for this PR and is available as an artifact.
+          
+          🔗 **Download Preview**: [documentation-preview-pr-${prNumber}](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${runId})
+          
+          To view the preview:
+          1. Download the artifact from the link above
+          2. Extract the ZIP file
+          3. Open \`index.html\` in your browser
+          
+          The preview includes all changes from this PR.`;
+          
+          // Check if we already commented
+          const comments = await github.rest.issues.listComments({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: prNumber
+          });
+          
+          const existingComment = comments.data.find(comment => 
+            comment.user.login === 'github-actions[bot]' && 
+            comment.body.includes('Documentation Preview Built')
+          );
+          
+          if (existingComment) {
+            // Update existing comment
+            await github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: existingComment.id,
+              body: body
+            });
+          } else {
+            // Create new comment
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              body: body
+            });
+          }
+
+  # =====================================================
+  # Documentation Status Check
+  # =====================================================
+  status:
+    name: Documentation Status
+    runs-on: ubuntu-latest
+    needs: [build, quality]
+    if: always()
+    steps:
+    - name: Check documentation status
+      run: |
+        if [[ "${{ needs.build.result }}" == "success" && 
+              "${{ needs.quality.result }}" == "success" ]]; then
+          echo "✅ Documentation checks passed!"
+          echo "📖 Documentation is ready for deployment"
+        else
+          echo "❌ Documentation checks failed:"
+          echo "  Build: ${{ needs.build.result }}"
+          echo "  Quality: ${{ needs.quality.result }}"
+          exit 1
+        fi
